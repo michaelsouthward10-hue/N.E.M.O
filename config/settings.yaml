@@ -1,0 +1,14 @@
+project:
+  name: NEMO
+  version: "0.2"
+
+vault:
+  path: "D:/Obsidian/The Legend Of The Archangel"
+
+ai:
+  provider: ollama
+  endpoint: "http://localhost:11434"
+  model: "qwen3:8b"
+
+display:
+  theme: cyan
