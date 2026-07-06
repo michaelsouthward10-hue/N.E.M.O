@@ -1,11 +1,19 @@
-from config import load_settings
+from .config import load_settings
 from pathlib import Path
 import requests
-
+from .scanner import VaultScanner
 
 class SystemManager:
+
     def __init__(self):
         self.settings = load_settings()
+
+    def scan_vault(self):
+        scanner = VaultScanner(
+            self.settings["vault"]["path"]
+        )
+
+        return scanner.scan()
 
     def check_vault(self):
         vault = Path(self.settings["vault"]["path"])
