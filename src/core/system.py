@@ -2,15 +2,23 @@ from .config import load_settings
 from pathlib import Path
 import requests
 from .scanner import VaultScanner
+from ai.summarizer import Summarizer
+import inspect
 
 class SystemManager:
 
     def __init__(self):
         self.settings = load_settings()
+        self.ai = Summarizer(
+            self.settings["ai"]["endpoint"],
+            self.settings["ai"]["model"]
+        )
 
     def scan_vault(self):
+        # instantiate and run the vault scanner
         scanner = VaultScanner(
-            self.settings["vault"]["path"]
+            self.settings["vault"]["path"],
+            self.ai,
         )
 
         return scanner.scan()

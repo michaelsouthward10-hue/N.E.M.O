@@ -4,9 +4,10 @@ from indexing.parser import MarkdownParser
 
 class VaultScanner:
 
-    def __init__(self, vault_path):
+    def __init__(self, vault_path, ai):
         self.vault = Path(vault_path)
         self.indexer = VaultIndexer(self.vault)
+        self.ai = ai
 
     def scan(self):
 
@@ -21,6 +22,8 @@ class VaultScanner:
                 markdown += 1
                 parser = MarkdownParser(item)
                 note = parser.parse()
+                summary = self.ai.summarize(note["text"])
+                note["summary"] = summary
                 self.indexer.add_note(note)
             else:
                 other += 1
