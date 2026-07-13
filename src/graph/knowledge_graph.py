@@ -23,3 +23,17 @@ class KnowledgeGraph:
     def connected_to(self,node):
 
         return self.graph.get(node, [])
+    
+    def build(self, index):
+
+        self.graph.clear()
+
+        for note in index.values():
+
+            source = note["title"]
+
+            self.add_note(source)
+
+            for link in note.get("links", []):
+
+                self.add_edge(source, link)
