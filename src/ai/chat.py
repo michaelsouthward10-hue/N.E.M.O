@@ -1,5 +1,6 @@
 from search.search_engine import SearchEngine
 from ai.prompt_builder import PromptBuilder
+from memory.conversation import ConversationMemory
 
 
 class NemoChat:
@@ -9,8 +10,11 @@ class NemoChat:
         self.ai = ai
         self.search = SearchEngine()
         self.prompt_builder = PromptBuilder()
+        self.memory = ConversationMemory()
     
     def ask(self, question):
+
+        self.memory.add("user", question)
 
         query = (
             question
@@ -39,6 +43,13 @@ class NemoChat:
         prompt = self.prompt_builder.build_prompt(question, context)
 
         answer = self.ai.answer(prompt)
+
+        self.memory.add("assistant", answer)
+
+        print("\nConversation Memory")
+
+        for item in self.memory.recent():
+            print(item)
 
         return {
             "answer": answer,
