@@ -1,3 +1,6 @@
+
+
+
 class PromptBuilder:
 
     def build_context(self, notes):
@@ -19,16 +22,31 @@ Content:
 
         return context
     
-    def build_prompt(self, question, context):
+    def build_prompt(self, question, context, history):
+        conversation = ""
 
-        return f"""
+        for item in history:
+            conversation += (
+                f"{item['role'].capitalize()}: "
+                f"{item['message']}\n"
+            )
+
+        prompt = f"""
 You are NEMO.
 
-Answer ONLY using the supplied context.
+You are an expert on the user's mythology vault.
 
-If the answer is not present, say you don't know.
+Answer ONLY using the supplied notes.
 
-Context:
+If the conversation references previous questions,
+use the conversation history to understand pronouns
+such as he, she, they, it, him and her.
+
+Conversation:
+
+{conversation}
+
+Knowledge:
 
 {context}
 
@@ -36,5 +54,11 @@ Question:
 
 {question}
 
-Answer:
+Answer naturally.
+
+Do not invent lore.
+
+If the answer is not present in the notes,
+say you don't know.
 """
+        return prompt

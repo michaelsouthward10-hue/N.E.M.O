@@ -40,7 +40,7 @@ class NemoChat:
 
         context = self.prompt_builder.build_context(results[:3])
 
-        prompt = self.prompt_builder.build_prompt(question, context)
+        prompt = self.prompt_builder.build_prompt(question, context, self.memory.recent())
 
         answer = self.ai.answer(prompt)
 
