@@ -2,14 +2,14 @@ from .config import load_settings
 from pathlib import Path
 import requests
 from .scanner import VaultScanner
-from ai.summarizer import Summarizer
+from ai.ollama_client import OllamaClient
 import inspect
 
 class SystemManager:
 
     def __init__(self):
         self.settings = load_settings()
-        self.ai = Summarizer(
+        self.ai = OllamaClient(
             self.settings["ai"]["endpoint"],
             self.settings["ai"]["model"]
         )

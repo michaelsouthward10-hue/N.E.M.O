@@ -1,21 +1,15 @@
 from core.config import load_settings
 from ai.ollama_client import OllamaClient
+from ai.chat import NemoChat
 
 settings = load_settings()
+search = SearchEngine()
 
 ai = OllamaClient(
     settings["ai"]["endpoint"],
     settings["ai"]["model"]
 )
 
-text = """
-Bolt of Wicked Wrath
+chat = NemoChat(ai, search)
 
-Depending on their affinity,
-the demon can shoot a bolt
-of channelled anger.
-"""
-
-result = ai.summarize(text)
-
-print(result)
+print(chat.ask("Who is Michael?"))
