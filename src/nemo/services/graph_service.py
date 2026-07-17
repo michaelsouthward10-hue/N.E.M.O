@@ -1,4 +1,4 @@
-from graph.knowledge_graph import KnowledgeGraph
+from nemo.graph.knowledge_graph import KnowledgeGraph
 import json
 
 

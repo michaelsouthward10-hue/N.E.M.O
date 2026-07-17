@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 print("Starting parser test...")
 
-from parsers.question_parser import QuestionParser
+from nemo.parsers.question_parser import QuestionParser
 
 print("Parser imported.")
 

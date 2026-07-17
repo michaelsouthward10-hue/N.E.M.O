@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.config import load_settings
-from ai.ollama_client import OllamaClient
+from nemo.core.config import load_settings
+from nemo.ai.ollama_client import OllamaClient
 
 settings = load_settings()
 

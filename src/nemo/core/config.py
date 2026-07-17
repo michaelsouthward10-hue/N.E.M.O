@@ -1,11 +1,10 @@
 from pathlib import Path
 import yaml
 
-CONFIG_PATH = (
-    Path(__file__).parent.parent.parent
-    / "config"
-    / "settings.yaml"
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+CONFIG_PATH = PROJECT_ROOT / "config" / "settings.yaml"
+
 
 def load_settings():
     print(f"Loading settings from: {CONFIG_PATH}")

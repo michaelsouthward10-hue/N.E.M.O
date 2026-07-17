@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from search.search_engine import SearchEngine
+from nemo.search.search_engine import SearchEngine
 
 engine = SearchEngine()
 

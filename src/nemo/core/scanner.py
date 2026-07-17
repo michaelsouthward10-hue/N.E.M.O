@@ -1,6 +1,6 @@
 from pathlib import Path
-from indexing.indexer import VaultIndexer
-from indexing.parser import MarkdownParser
+from nemo.indexing.indexer import VaultIndexer
+from nemo.indexing.parser import MarkdownParser
 
 class VaultScanner:
 

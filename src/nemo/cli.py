@@ -1,7 +1,7 @@
-from core.config import load_settings
-from ai.ollama_client import OllamaClient
-from ai.chat import NemoChat
-from search.search_engine import SearchEngine
+from nemo.core.config import load_settings
+from nemo.ai.ollama_client import OllamaClient
+from nemo.ai.chat import NemoChat
+from nemo.search.search_engine import SearchEngine
 
 
 settings = load_settings()

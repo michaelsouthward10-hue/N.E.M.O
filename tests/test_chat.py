@@ -3,9 +3,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.config import load_settings
-from ai.ollama_client import OllamaClient
-from ai.chat import NemoChat
+from nemo.core.config import load_settings
+from nemo.ai.ollama_client import OllamaClient
+from nemo.ai.chat import NemoChat
 
 settings = load_settings()
 

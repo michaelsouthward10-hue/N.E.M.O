@@ -1,6 +1,6 @@
-from search.search_engine import SearchEngine
-from ai.prompt_builder import PromptBuilder
-from memory.conversation import ConversationMemory
+from nemo.search.search_engine import SearchEngine
+from nemo.ai.prompt_builder import PromptBuilder
+from nemo.memory.conversation import ConversationMemory
 
 
 class NemoChat:

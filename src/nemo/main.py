@@ -1,7 +1,7 @@
 from rich.console import Console
 from rich.table import Table
 
-from core.system import SystemManager
+from nemo.core.system import SystemManager
 
 console = Console()
 

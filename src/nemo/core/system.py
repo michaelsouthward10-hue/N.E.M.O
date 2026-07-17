@@ -2,7 +2,7 @@ from .config import load_settings
 from pathlib import Path
 import requests
 from .scanner import VaultScanner
-from ai.ollama_client import OllamaClient
+from nemo.ai.ollama_client import OllamaClient
 import inspect
 
 class SystemManager:
