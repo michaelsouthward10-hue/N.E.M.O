@@ -24,6 +24,36 @@ class KnowledgeGraph:
 
         return self.graph.get(node, [])
     
+    def find_path(self, start, goal):
+        
+        if start == goal:
+            return [start]
+        
+        visited = set()
+
+        queue = [[start]]
+
+        while queue:
+
+            path = queue.pop(0)
+            node = path[-1]
+
+            if node in visited:
+                continue
+            
+            visited.add(node)
+
+            for neighbour in self.connected_to(node):
+
+                new_path = path + [neighbour]
+
+                if neighbour == goal:
+                    return new_path
+                
+                queue.append(new_path)
+
+        return None
+
     def build(self, index):
 
         self.graph.clear()
@@ -37,3 +67,14 @@ class KnowledgeGraph:
             for link in note.get("links", []):
 
                 self.add_edge(source, link)
+
+    def connected_from(self, node):
+
+        connected = []
+
+        for source, targets in self.graph.items():
+
+            if node in targets:
+                connected.append(source)
+
+        return connected

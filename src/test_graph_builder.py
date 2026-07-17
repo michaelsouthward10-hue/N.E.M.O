@@ -10,3 +10,10 @@ graph = KnowledgeGraph()
 graph.build(index)
 
 print(graph.connected_to("Archangel Michael"))
+
+path = graph.find_path(
+    "Archangel Michael",
+    "Lucifer"
+)
+
+print(path)
