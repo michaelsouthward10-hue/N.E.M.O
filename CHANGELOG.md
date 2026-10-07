@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.0.3 — Note writing and clickable sources
 
 - Added a New note editor for writing and saving note contents directly to the vault.
 - Made answer sources clickable so their notes open in Obsidian.
+- Stored vault-relative note paths in the index to resolve source links.
 
 ## 1.0.2 — Mythic visual refresh
 

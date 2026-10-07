@@ -74,3 +74,28 @@ def test_note_request_writes_markdown_in_vault_without_overwriting(tmp_path):
     repeated = chat.ask("new note: Michael's abilities")
     assert "already exists" in repeated["answer"]
     assert len(ai.prompts) == 1
+
+
+def test_save_note_writes_user_content_without_calling_ai(tmp_path):
+    chat, ai = make_chat(vault_path=tmp_path)
+    body = "A note written by hand.\n\nIt keeps [[Obsidian]] Markdown intact."
+
+    result = chat.save_note("My Note", body)
+
+    note = tmp_path / "My Note.md"
+    assert result["answer"] == "Created the note 'My Note' in your Obsidian vault."
+    assert result["sources"] == [str(note)]
+    assert note.read_text(encoding="utf-8") == f"# My Note\n\n{body}\n"
+    assert ai.prompts == []
+
+
+def test_save_note_does_not_overwrite_an_existing_note(tmp_path):
+    chat, ai = make_chat(vault_path=tmp_path)
+    note = tmp_path / "My Note.md"
+    note.write_text("Existing contents", encoding="utf-8")
+
+    result = chat.save_note("My Note", "New contents")
+
+    assert "already exists" in result["answer"]
+    assert note.read_text(encoding="utf-8") == "Existing contents"
+    assert ai.prompts == []
