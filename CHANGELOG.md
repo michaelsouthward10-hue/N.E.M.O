@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added a constellation map for exploring linked vault notes.
+- Added Oracle modes to find connections, summarize topics, and develop ideas.
+
 ## 1.0.3 — Note writing and clickable sources
 
 - Added a New note editor for writing and saving note contents directly to the vault.

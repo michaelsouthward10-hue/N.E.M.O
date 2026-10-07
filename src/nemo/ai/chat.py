@@ -18,13 +18,27 @@ class NemoChat:
         self.router = router or QuestionRouter()
         self.vault_path = Path(vault_path) if vault_path else None
     
-    def ask(self, question):
+    def ask(self, question, mode="Ask"):
 
         self.memory.add("user", question)
 
         note_request = self._note_request(question)
         if note_request is not None:
             return self._create_note(note_request)
+
+        if mode == "Find connections":
+            relationship_question = f"How are {question} connected?"
+            result = self.router.handle(relationship_question)
+            path = result.get("result")
+            answer = " → ".join(path) if path else result.get(
+                "message",
+                "I couldn't find a connection between those notes in your vault.",
+            )
+            self.memory.add("assistant", answer)
+            return {"answer": answer, "sources": path or []}
+
+        if mode in {"Summarize topic", "Develop idea"}:
+            return self._answer_oracle_mode(question, mode)
 
         route = self.router.route(question)
         if route == "relationship":
@@ -78,6 +92,36 @@ class NemoChat:
                 for note in results[:3]
             ]
         }
+
+    def _answer_oracle_mode(self, topic, mode):
+        results = self.search.search_by_text(topic)[:3]
+        if mode == "Summarize topic" and not results:
+            answer = f"I couldn't find any notes about '{topic}' to summarize."
+            self.memory.add("assistant", answer)
+            return {"answer": answer, "sources": []}
+
+        context = self.prompt_builder.build_context(results)
+        if mode == "Summarize topic":
+            instructions = (
+                "Summarize the topic using only the supplied Obsidian notes. "
+                "Explain the central ideas and how they fit together. If the notes "
+                "do not support a detail, say so instead of inventing facts."
+            )
+        else:
+            instructions = (
+                "Help the user develop this idea. Use supplied Obsidian notes for "
+                "continuity, distinguish established note facts from new suggestions, "
+                "and offer useful angles, questions, or next steps. If no notes are "
+                "relevant, help develop the idea without claiming vault support."
+            )
+
+        prompt = (
+            f"You are N.E.M.O., an assistant for an Obsidian vault. {instructions}\n\n"
+            f"Topic or idea: {topic}\n\nRelevant vault notes:\n{context}"
+        )
+        answer = self.ai.answer(prompt)
+        self.memory.add("assistant", answer)
+        return {"answer": answer, "sources": [note["title"] for note in results]}
 
     @staticmethod
     def _note_request(question):

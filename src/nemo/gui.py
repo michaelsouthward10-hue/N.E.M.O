@@ -13,6 +13,7 @@ import requests
 
 from nemo.ai.chat import NemoChat
 from nemo.ai.ollama_client import OllamaClient
+from nemo.constellation import ConstellationWindow
 from nemo.core.config import load_settings, save_settings
 from nemo.core.scanner import EXCLUDED_DIRECTORIES, VaultScanner
 from nemo.search.search_engine import SearchEngine
@@ -106,6 +107,8 @@ class NemoDesktopApp:
         self.note_button.pack(side="right")
         self.update_button = ttk.Button(toolbar, text="Check for updates", command=self._manual_update_check)
         self.update_button.pack(side="right", padx=(8, 0))
+        self.map_button = ttk.Button(toolbar, text="Constellation", command=self._show_constellation)
+        self.map_button.pack(side="right", padx=(8, 0))
 
         body = ttk.Frame(self.root, style="Surface.TFrame", padding=1)
         body.grid(row=2, column=0, sticky="nsew", padx=24)
@@ -136,7 +139,23 @@ class NemoDesktopApp:
 
         composer = ttk.Frame(self.root, padding=(24, 12, 24, 18))
         composer.grid(row=3, column=0, sticky="ew")
-        ttk.Label(composer, text="SPEAK TO N.E.M.O", style="Kicker.TLabel").pack(anchor="w", pady=(0, 6))
+        composer_heading = ttk.Frame(composer)
+        composer_heading.pack(fill="x", pady=(0, 6))
+        ttk.Label(composer_heading, text="SPEAK TO N.E.M.O", style="Kicker.TLabel").pack(side="left")
+        self.oracle_mode_var = tk.StringVar(value="Ask")
+        self.oracle_mode_hint = tk.StringVar(value="Ask anything about your vault")
+        ttk.Label(composer_heading, textvariable=self.oracle_mode_hint, style="Muted.TLabel").pack(
+            side="right", padx=(10, 0)
+        )
+        self.oracle_mode_picker = ttk.Combobox(
+            composer_heading,
+            textvariable=self.oracle_mode_var,
+            values=("Ask", "Find connections", "Summarize topic", "Develop idea"),
+            width=19,
+            state="readonly",
+        )
+        self.oracle_mode_picker.pack(side="right")
+        self.oracle_mode_picker.bind("<<ComboboxSelected>>", self._update_oracle_hint)
         chat_bar = ttk.Frame(composer, style="Surface.TFrame", padding=(10, 6))
         chat_bar.pack(fill="x")
         self.prompt_var = tk.StringVar()
@@ -345,8 +364,39 @@ class NemoDesktopApp:
         if not question:
             return
         self.prompt_var.set("")
-        self._append_message("You", question, "user")
-        self._run_background("answer", lambda: self.chat.ask(question))
+        mode = self.oracle_mode_var.get()
+        display_question = question if mode == "Ask" else f"{mode} · {question}"
+        self._append_message("You", display_question, "user")
+        self._run_background("answer", lambda: self.chat.ask(question, mode=mode))
+
+    def _update_oracle_hint(self, _event=None):
+        hints = {
+            "Ask": "Ask anything about your vault",
+            "Find connections": "Enter two note titles",
+            "Summarize topic": "Summarize notes about a topic",
+            "Develop idea": "Explore an idea with vault context",
+        }
+        self.oracle_mode_hint.set(hints.get(self.oracle_mode_var.get(), hints["Ask"]))
+
+    def _show_constellation(self):
+        vault_path = self.settings.get("vault", {}).get("path", "")
+        if not vault_path or not Path(vault_path).is_dir():
+            messagebox.showinfo(
+                "Choose your vault",
+                "Choose an Obsidian vault and reindex it before opening the constellation map.",
+                parent=self.root,
+            )
+            return
+        if not self.chat.search.index or not any(
+            note.get("title", key) for key, note in self.chat.search.index.items()
+        ):
+            messagebox.showinfo(
+                "Reindex your vault",
+                "Reindex your vault to build a map of its linked notes.",
+                parent=self.root,
+            )
+            return
+        ConstellationWindow(self.root, self.chat.search.index, self._open_source)
 
     def _new_note(self):
         dialog = tk.Toplevel(self.root)

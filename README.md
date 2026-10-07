@@ -9,7 +9,7 @@ The 1.0 release is a usable desktop application. The source remains available so
 1. Install [Ollama for Windows](https://ollama.com/download/windows), start it, and download the configured model. The default is `qwen3:8b`.
 2. Download `NEMO-Windows-Portable.zip` from the [GitHub Releases page](https://github.com/michaelsouthward10-hue/N.E.M.O/releases), extract it, and open `NEMO.exe`. The Windows app and its shortcuts use the N.E.M.O. icon.
 3. In N.E.M.O., choose your Obsidian vault and select **Reindex**. Reindex again after editing notes.
-4. Ask questions, ask how two note topics are connected, or choose **New note** to write and save your own note. To have N.E.M.O. draft one from your vault, ask in chat with `new note: <title>`.
+4. Ask questions, use an Oracle mode to explore your notes, or choose **New note** to write and save your own note. To have N.E.M.O. draft one from your vault, ask in chat with `new note: <title>`.
 
 The installer does not require administrator access. The Ollama model is downloaded separately and is not bundled with N.E.M.O.
 
@@ -18,11 +18,13 @@ The installer does not require administrator access. The Ollama model is downloa
 - Searches indexed Markdown notes and opens answer sources in Obsidian when clicked.
 - Answers from matching note content with a locally running Ollama model.
 - Finds paths between notes using Obsidian `[[wikilinks]]`.
+- Explores linked notes in a constellation map and opens selected notes in Obsidian.
+- Offers Oracle modes to find connections, summarize a topic, and develop an idea with vault context.
 - Drafts a Markdown note using relevant indexed notes, without overwriting an existing file.
 - Keeps settings in `%APPDATA%\NEMO` and the private note index in `%LOCALAPPDATA%\NEMO`.
 - Checks GitHub for a newer release and opens its download page when you choose to update.
 
-When you ask a question or request an AI-drafted note, the relevant vault text and prompt are sent to your configured Ollama endpoint. With the default setup, Ollama runs on your own computer. Notes written with **New note** are saved directly to the vault and are not sent to Ollama. Reindexing parses Markdown locally and does not make Ollama requests. N.E.M.O. contacts GitHub to check for updates; it does not upload your vault or index. The index contains copies of your Markdown text and short local previews, so it is stored outside the application folder and excluded from this repository and release packages.
+When you ask a question, summarize a topic, develop an idea, or request an AI-drafted note, relevant vault text and your prompt are sent to your configured Ollama endpoint. The **Find connections** mode and constellation map use the local index without making model requests. With the default setup, Ollama runs on your own computer. Notes written with **New note** are saved directly to the vault and are not sent to Ollama. Reindexing parses Markdown locally and does not make Ollama requests. N.E.M.O. contacts GitHub to check for updates; it does not upload your vault or index. The index contains copies of your Markdown text and short local previews, so it is stored outside the application folder and excluded from this repository and release packages.
 
 ## Requirements and help
 
