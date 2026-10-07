@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.4 — Constellation and Oracle modes
 
 - Added a constellation map for exploring linked vault notes.
 - Added Oracle modes to find connections, summarize topics, and develop ideas.
