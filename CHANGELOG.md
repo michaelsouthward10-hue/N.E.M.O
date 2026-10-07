@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 — Chat improvements
+
+- Added a dedicated bottom chat bar that stays visible in compact and maximized windows.
+- Let the assistant answer general questions when no matching vault notes are found.
+
 ## 1.0.0 — Desktop release
 
 N.E.M.O. is now delivered as a Windows desktop application with a portable download and optional installer.
