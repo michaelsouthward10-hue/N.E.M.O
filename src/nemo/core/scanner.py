@@ -83,6 +83,7 @@ class VaultScanner:
                 unreadable += 1
                 continue
 
+            note["path"] = path.relative_to(self.vault).as_posix()
             note["summary"] = self._summary(note["text"])
             self.indexer.add_note(note)
 

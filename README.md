@@ -15,7 +15,7 @@ The installer does not require administrator access. The Ollama model is downloa
 
 ## What it does
 
-- Searches indexed Markdown notes and shows the notes used as sources.
+- Searches indexed Markdown notes and opens answer sources in Obsidian when clicked.
 - Answers from matching note content with a locally running Ollama model.
 - Finds paths between notes using Obsidian `[[wikilinks]]`.
 - Drafts a Markdown note using relevant indexed notes, without overwriting an existing file.

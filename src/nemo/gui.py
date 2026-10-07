@@ -1,18 +1,20 @@
 """Windows desktop interface for NEMO."""
 
-from pathlib import Path
+import os
 import queue
 import threading
 import tkinter as tk
 import webbrowser
+from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
+from urllib.parse import urlencode
 
 import requests
 
 from nemo.ai.chat import NemoChat
 from nemo.ai.ollama_client import OllamaClient
 from nemo.core.config import load_settings, save_settings
-from nemo.core.scanner import VaultScanner
+from nemo.core.scanner import EXCLUDED_DIRECTORIES, VaultScanner
 from nemo.search.search_engine import SearchEngine
 from nemo.services.router import QuestionRouter
 from nemo.update_checker import check_for_update
@@ -130,6 +132,7 @@ class NemoDesktopApp:
         self.transcript.tag_configure("user-name", foreground="#9db7ff", font=("Segoe UI Semibold", 10))
         self.transcript.tag_configure("message", foreground=TEXT)
         self.transcript.tag_configure("source", foreground=MUTED, font=("Segoe UI", 9))
+        self.source_link_number = 0
 
         composer = ttk.Frame(self.root, padding=(24, 12, 24, 18))
         composer.grid(row=3, column=0, sticky="ew")
@@ -164,10 +167,87 @@ class NemoDesktopApp:
         self.transcript.insert("end", f"{speaker}\n", name_tag)
         self.transcript.insert("end", f"{message}\n", "message")
         if sources:
-            self.transcript.insert("end", f"Sources: {', '.join(map(str, sources))}\n", "source")
+            self.transcript.insert("end", "Sources · click a note to open it in Obsidian: ", "source")
+            for number, source in enumerate(sources):
+                if number:
+                    self.transcript.insert("end", ", ", "source")
+                source_text = str(source)
+                source_path = Path(source_text)
+                label = source_path.stem if source_path.suffix.casefold() == ".md" else source_text
+                tag = f"source-link-{self.source_link_number}"
+                self.source_link_number += 1
+                self.transcript.tag_configure(tag, foreground=ACCENT, underline=True)
+                self.transcript.tag_bind(
+                    tag,
+                    "<Button-1>",
+                    lambda _event, reference=source_text: self._open_source(reference),
+                )
+                self.transcript.tag_bind(tag, "<Enter>", lambda _event: self.transcript.configure(cursor="hand2"))
+                self.transcript.tag_bind(tag, "<Leave>", lambda _event: self.transcript.configure(cursor=""))
+                self.transcript.insert("end", label, ("source", tag))
+            self.transcript.insert("end", "\n", "source")
         self.transcript.insert("end", "\n")
         self.transcript.configure(state="disabled")
         self.transcript.see("end")
+
+    def _open_source(self, source):
+        path = self._resolve_source_path(source)
+        if path is None:
+            messagebox.showinfo(
+                "Source note not found",
+                "This source is no longer in the selected vault. Reindex the vault and try again.",
+                parent=self.root,
+            )
+            return
+
+        uri = f"obsidian://open?{urlencode({'path': str(path)})}"
+        try:
+            opened = webbrowser.open(uri)
+        except OSError:
+            opened = False
+        if not opened:
+            messagebox.showinfo(
+                "Couldn't open Obsidian",
+                "Check that Obsidian is installed and try opening the note again.",
+                parent=self.root,
+            )
+
+    def _resolve_source_path(self, source):
+        vault_value = self.settings.get("vault", {}).get("path", "")
+        vault = Path(vault_value).resolve() if vault_value else None
+        if vault is None or not vault.is_dir():
+            return None
+
+        candidate = Path(source)
+        note = None
+        if not candidate.is_absolute():
+            note = self.chat.search.search_by_title(str(source))
+            indexed_path = note.get("path") if note else None
+            if indexed_path:
+                candidate = Path(indexed_path)
+                if not candidate.is_absolute():
+                    candidate = vault / candidate
+            else:
+                candidate = vault / candidate
+
+        try:
+            resolved = candidate.resolve()
+            resolved.relative_to(vault)
+            if resolved.is_file() and resolved.suffix.casefold() == ".md":
+                return resolved
+        except (OSError, ValueError):
+            return None
+
+        title = Path(str(source)).stem.casefold()
+        for current, directories, filenames in os.walk(vault):
+            directories[:] = [
+                name for name in directories if name.casefold() not in EXCLUDED_DIRECTORIES
+            ]
+            for filename in filenames:
+                candidate = Path(current, filename)
+                if candidate.suffix.casefold() == ".md" and candidate.stem.casefold() == title:
+                    return candidate.resolve()
+        return None
 
     def _set_busy(self, busy, status=None):
         self.busy = busy

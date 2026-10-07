@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added a New note editor for writing and saving note contents directly to the vault.
+- Made answer sources clickable so their notes open in Obsidian.
 
 ## 1.0.2 — Mythic visual refresh
 
