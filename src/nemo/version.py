@@ -1,3 +1,3 @@
 """Version information for the NEMO desktop application."""
 
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"

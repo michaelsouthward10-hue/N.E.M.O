@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 — Mythic visual refresh
+
+- Reworked the desktop palette with deep sea tones, aged gold, and sea-glass accents.
+- Added a classical title treatment and oracle-inspired interface labels.
+
 ## 1.0.1 — Chat improvements
 
 - Added a dedicated bottom chat bar that stays visible in compact and maximized windows.
