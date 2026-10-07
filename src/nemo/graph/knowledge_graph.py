@@ -21,8 +21,10 @@ class KnowledgeGraph:
             self.graph[source]["connections"].add(target)
 
     def connected_to(self,node):
+        if node not in self.graph:
+            return set()
 
-        return self.graph.get(node, [])
+        return self.graph.get(node)["connections"]
     
     def find_path(self, start, goal):
         

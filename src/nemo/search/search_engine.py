@@ -1,19 +1,45 @@
 import json
 from pathlib import Path
 
+from nemo.core.paths import DATA_DIR
+
 
 class SearchEngine:
 
     def __init__(self):
-        self.index_path = Path("data/index.json")
+        self.index_path = DATA_DIR / "index.json"
         self.index = self.load_index()
 
     def load_index(self):
-        with open(self.index_path, "r", encoding="utf-8") as file:
-            return json.load(file)
+        try:
+            with open(self.index_path, "r", encoding="utf-8") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return {}
 
     def search_by_title(self, title):
-        return self.index.get(title)
+
+        # Exact match
+        result = self.index.get(title)
+
+        if result:
+            return result
+
+        # Case-insensitive title match
+        title_lower = title.lower()
+
+        for note in self.index.values():
+
+            if note.get("title", "").lower() == title_lower:
+                return note
+
+        # Partial title match
+        for note in self.index.values():
+
+            if title_lower in note.get("title", "").lower():
+                return note
+
+        return None
 
     def search_by_tag(self, tag):
 

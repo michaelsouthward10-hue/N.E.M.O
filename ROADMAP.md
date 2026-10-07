@@ -1,57 +1,13 @@
-# Nemo Roadmap
+# Project direction
 
-## Version 0.1 ✅
-- [x] Project structure
-- [x] Virtual environment
-- [x] Startup screen
+N.E.M.O. 1.0 establishes the Windows desktop application as the main product. The first release is complete as a usable foundation; later versions can improve it without changing the goal of keeping the user's vault in their control.
 
----
+## Possible future work
 
-## Version 0.2
-- [ ] Configuration system
-- [ ] Ollama detection
-- [ ] Vault detection
-- [ ] System health check
+- Improve search ranking for natural-language questions.
+- Make large vault indexing faster and show indexing progress.
+- Add clearer recovery guidance for Ollama and model errors.
+- Expand relationship exploration and source navigation.
+- Improve release automation and update installation.
 
----
-
-## Version 0.3
-- [ ] Scan vault
-- [ ] Count notes
-- [ ] Count folders
-- [ ] Build vault statistics
-
----
-
-## Version 0.4
-- [ ] Read markdown files
-- [ ] Extract metadata
-- [ ] Index notes
-
----
-
-## Version 0.5
-- [ ] Connect AI
-- [ ] Ask questions about the vault
-- [ ] Semantic search
-
----
-
-## Version 0.6
-- [ ] Character parser
-- [ ] Timeline parser
-- [ ] Relationship parser
-
----
-
-## Version 0.7
-- [ ] Automatic updates
-- [ ] Continuity checker
-- [ ] Canon validator
-
----
-
-## Version 1.0
-- [ ] Desktop dashboard
-- [ ] AI Archivist
-- [ ] Writing assistant
+These are areas to explore, not promises or a schedule. Report bugs and suggest features through GitHub Issues.

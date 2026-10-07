@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
 
 # Virtual Environment
 .venv/
@@ -10,6 +11,16 @@ __pycache__/
 
 # Logs
 logs/
+
+# Local Obsidian content index
+data/index.json
+
+# Desktop build output
+/.nemo-build/
+/.nemo-release/
+build/
+dist/
+*.spec
 
 # Environment
 .env

@@ -1,5 +1,5 @@
 from nemo.graph.knowledge_graph import KnowledgeGraph
-import json
+from nemo.search.search_engine import SearchEngine
 
 
 class GraphService:
@@ -8,10 +8,7 @@ class GraphService:
 
         self.graph = KnowledgeGraph()
 
-        with open("data/index.json", "r", encoding="utf-8") as file:
-            index = json.load(file)
-
-        self.graph.build(index)
+        self.graph.build(SearchEngine().index)
 
     def find_relationship(self, source, target):
 

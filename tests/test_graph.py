@@ -1,18 +1,28 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
 from nemo.graph.knowledge_graph import KnowledgeGraph
 
-graph = KnowledgeGraph()
 
-graph.add_edge("Michael", "Lucifer")
-graph.add_edge("Michael", "God")
-graph.add_edge("Lucifer", "Hell")
+def test_graph_connection():
 
-print(graph.graph)
+    graph = KnowledgeGraph()
 
-print()
+    graph.add_edge("Michael", "Lucifer")
 
-print(graph.connected_to("Michael"))
+    connections = graph.connected_to("Michael")
+
+    assert "Lucifer" in connections
+
+
+def test_graph_path():
+
+    graph = KnowledgeGraph()
+
+    graph.add_edge("Michael", "God")
+    graph.add_edge("God", "Lucifer")
+
+    path = graph.find_path("Michael", "Lucifer")
+
+    assert path == [
+        "Michael",
+        "God",
+        "Lucifer"
+    ]

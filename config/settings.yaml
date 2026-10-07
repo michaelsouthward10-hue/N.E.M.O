@@ -1,9 +1,9 @@
 project:
   name: NEMO
-  version: "0.2"
+  version: "1.0.0"
 
 vault:
-  path: "D:/Obsidian/The Legend Of The Archangel"
+  path: ""
 
 ai:
   provider: ollama

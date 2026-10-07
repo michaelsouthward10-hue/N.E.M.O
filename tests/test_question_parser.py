@@ -1,26 +1,53 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
-print("Starting parser test...")
-
 from nemo.parsers.question_parser import QuestionParser
 
-print("Parser imported.")
 
-parser = QuestionParser()
+def test_relationship_question():
 
-print("Parser created.")
+    parser = QuestionParser()
 
-question = parser.parse(
-    "How is Michael connected to Lucifer?"
-)
+    question = parser.parse(
+        "How is Michael connected to Lucifer?"
+    )
 
-print("Question parsed.")
+    assert question.intent == "relationship"
+    assert "Michael" in question.entities
+    assert "Lucifer" in question.entities
 
-print(question.intent)
-print(question.original)
-print(question.entities)
 
-print("Finished.")
+def test_general_question():
+
+    parser = QuestionParser()
+
+    question = parser.parse(
+        "Who is Michael?"
+    )
+
+    assert question.intent == "general"
+    assert "Michael" in question.entities
+
+def test_extract_relationship_entities():
+
+    parser = QuestionParser()
+
+    question = parser.parse(
+        "How is Michael connected to Lucifer?"
+    )
+
+    assert question.intent == "relationship"
+    assert question.entities == [
+        "Michael",
+        "Lucifer"
+    ]
+
+def test_extract_multiword_entity():
+
+    parser = QuestionParser()
+
+    question = parser.parse(
+        "How is Archangel Michael connected to Lucifer?"
+    )
+
+    assert question.entities == [
+        "Archangel Michael",
+        "Lucifer"
+    ]
