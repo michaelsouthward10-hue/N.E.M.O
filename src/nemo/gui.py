@@ -5,7 +5,7 @@ import queue
 import threading
 import tkinter as tk
 import webbrowser
-from tkinter import filedialog, messagebox, simpledialog, ttk
+from tkinter import filedialog, messagebox, ttk
 
 import requests
 
@@ -269,9 +269,101 @@ class NemoDesktopApp:
         self._run_background("answer", lambda: self.chat.ask(question))
 
     def _new_note(self):
-        title = simpledialog.askstring("Create a note", "What should the note be called?", parent=self.root)
-        if title and title.strip():
-            self._send(f"new note: {title.strip()}")
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Write a new note")
+        dialog.configure(bg=BACKGROUND)
+        dialog.transient(self.root)
+        dialog.grab_set()
+        dialog.minsize(480, 360)
+        dialog.geometry("580x470")
+
+        self.root.update_idletasks()
+        x = self.root.winfo_rootx() + (self.root.winfo_width() - 580) // 2
+        y = self.root.winfo_rooty() + (self.root.winfo_height() - 470) // 2
+        dialog.geometry(f"580x470+{max(x, 0)}+{max(y, 0)}")
+        dialog.grid_columnconfigure(0, weight=1)
+        dialog.grid_rowconfigure(1, weight=1)
+
+        content = ttk.Frame(dialog, padding=20)
+        content.grid(row=0, column=0, rowspan=2, sticky="nsew")
+        content.grid_columnconfigure(0, weight=1)
+        content.grid_rowconfigure(4, weight=1)
+
+        ttk.Label(content, text="GIVE YOUR NOTE A TITLE", style="Kicker.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 6)
+        )
+        title_entry = tk.Entry(
+            content,
+            bg=SURFACE,
+            fg=TEXT,
+            insertbackground=TEXT,
+            relief="flat",
+            font=("Segoe UI", 11),
+            highlightthickness=1,
+            highlightbackground="#34434a",
+            highlightcolor=SEA_GLASS,
+        )
+        title_entry.grid(row=1, column=0, sticky="ew", ipady=8, padx=1)
+
+        ttk.Label(content, text="WRITE YOUR NOTE", style="Kicker.TLabel").grid(
+            row=2, column=0, sticky="w", pady=(16, 6)
+        )
+        ttk.Label(
+            content,
+            text="Your words are saved below the title, just as you write them.",
+            style="Muted.TLabel",
+        ).grid(row=3, column=0, sticky="w", pady=(0, 6))
+        body_frame = ttk.Frame(content, style="Surface.TFrame", padding=1)
+        body_frame.grid(row=4, column=0, sticky="nsew")
+        body_frame.grid_columnconfigure(0, weight=1)
+        body_frame.grid_rowconfigure(0, weight=1)
+        body_text = tk.Text(
+            body_frame,
+            wrap="word",
+            bg=SURFACE,
+            fg=TEXT,
+            insertbackground=TEXT,
+            selectbackground="#36565a",
+            relief="flat",
+            padx=12,
+            pady=10,
+            font=("Segoe UI", 10),
+        )
+        body_text.grid(row=0, column=0, sticky="nsew")
+        body_scrollbar = ttk.Scrollbar(body_frame, orient="vertical", command=body_text.yview)
+        body_scrollbar.grid(row=0, column=1, sticky="ns")
+        body_text.configure(yscrollcommand=body_scrollbar.set)
+
+        buttons = ttk.Frame(content)
+        buttons.grid(row=5, column=0, sticky="e", pady=(16, 0))
+
+        def save():
+            title = title_entry.get().strip()
+            body = body_text.get("1.0", "end-1c")
+            if not title:
+                messagebox.showinfo("Add a title", "Give your note a title first.", parent=dialog)
+                title_entry.focus_set()
+                return
+            if not body.strip():
+                messagebox.showinfo("Write your note", "Add some content before saving.", parent=dialog)
+                body_text.focus_set()
+                return
+
+            try:
+                result = self.chat.save_note(title, body)
+            except OSError as error:
+                messagebox.showerror("Couldn't save note", str(error), parent=dialog)
+                return
+            self._append_message("N.E.M.O", result["answer"], "assistant", result.get("sources"))
+            self.status_var.set("Ready · note saved" if result.get("sources") else "Needs attention")
+            if result.get("sources"):
+                dialog.destroy()
+
+        ttk.Button(buttons, text="Cancel", command=dialog.destroy).pack(side="right", padx=(8, 0))
+        ttk.Button(buttons, text="Save note", style="Accent.TButton", command=save).pack(side="right")
+        dialog.bind("<Control-Return>", lambda _event: save())
+        title_entry.bind("<Return>", lambda _event: body_text.focus_set())
+        title_entry.focus_set()
 
     def _choose_vault(self):
         current = self.settings.get("vault", {}).get("path", "")

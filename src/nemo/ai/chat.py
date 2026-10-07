@@ -89,26 +89,11 @@ class NemoChat:
         return match.group(1) if match else None
 
     def _create_note(self, request):
-        if self.vault_path is None:
-            from nemo.core.config import load_settings
-
-            self.vault_path = Path(load_settings()["vault"]["path"])
-
-        if not self.vault_path.is_dir():
-            return {
-                "answer": f"I couldn't find the configured Obsidian vault: {self.vault_path}",
-                "sources": [],
-            }
-
         title = request.strip().removesuffix(".md").strip()
-        safe_name = re.sub(r'[\x00-\x1f<>:"/\\|?*]', "-", title).strip(" .")
-        if re.match(r"^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", safe_name, re.IGNORECASE):
-            safe_name = f"_{safe_name}"
-        safe_name = safe_name[:180].rstrip(" .")
-        if not safe_name:
-            return {"answer": "Please give the new note a title.", "sources": []}
-
-        target = self.vault_path / f"{safe_name}.md"
+        destination, error = self._note_destination(title)
+        if error:
+            return error
+        safe_name, target = destination
         if target.exists():
             return {
                 "answer": f"A note named '{safe_name}' already exists, so I left it unchanged.",
@@ -137,3 +122,46 @@ class NemoChat:
         answer = f"Created the note '{safe_name}' in your Obsidian vault."
         self.memory.add("assistant", answer)
         return {"answer": answer, "sources": [str(target)]}
+
+    def save_note(self, title, body):
+        """Save user-written Markdown as a new note without overwriting files."""
+        destination, error = self._note_destination(title)
+        if error:
+            return error
+        safe_name, target = destination
+        if target.exists():
+            return {
+                "answer": f"A note named '{safe_name}' already exists, so I left it unchanged.",
+                "sources": [],
+            }
+
+        content = body.strip()
+        if not content:
+            return {"answer": "Write some content for the note first.", "sources": []}
+
+        target.write_text(f"# {safe_name}\n\n{content}\n", encoding="utf-8")
+        answer = f"Created the note '{safe_name}' in your Obsidian vault."
+        self.memory.add("assistant", answer)
+        return {"answer": answer, "sources": [str(target)]}
+
+    def _note_destination(self, title):
+        if self.vault_path is None:
+            from nemo.core.config import load_settings
+
+            configured_vault = load_settings().get("vault", {}).get("path", "")
+            self.vault_path = Path(configured_vault) if configured_vault else None
+
+        if self.vault_path is None or not self.vault_path.is_dir():
+            return None, {
+                "answer": f"I couldn't find the configured Obsidian vault: {self.vault_path or '(not selected)'}",
+                "sources": [],
+            }
+
+        safe_name = re.sub(r'[\x00-\x1f<>:"/\\|?*]', "-", title).strip(" .")
+        if re.match(r"^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)", safe_name, re.IGNORECASE):
+            safe_name = f"_{safe_name}"
+        safe_name = safe_name[:180].rstrip(" .")
+        if not safe_name:
+            return None, {"answer": "Please give the new note a title.", "sources": []}
+
+        return (safe_name, self.vault_path / f"{safe_name}.md"), None

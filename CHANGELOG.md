@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added a New note editor for writing and saving note contents directly to the vault.
+
 ## 1.0.2 — Mythic visual refresh
 
 - Reworked the desktop palette with deep sea tones, aged gold, and sea-glass accents.
