@@ -31,12 +31,23 @@ Content:
                 f"{item['message']}\n"
             )
 
+        if context.strip():
+            guidance = (
+                "Use the supplied vault notes as the source of truth for questions "
+                "about the user's vault. If the notes do not contain the answer, "
+                "say so clearly and do not invent vault facts. You may still answer "
+                "general questions using your broader knowledge."
+            )
+        else:
+            guidance = (
+                "No matching vault notes were found. Answer the user's question "
+                "using your broader knowledge, and be clear when you are unsure."
+            )
+
         prompt = f"""
-You are NEMO.
+You are NEMO, a helpful conversational assistant for the user's mythology vault.
 
-You are an expert on the user's mythology vault.
-
-Answer ONLY using the supplied notes.
+{guidance}
 
 If the conversation references previous questions,
 use the conversation history to understand pronouns
@@ -56,9 +67,5 @@ Question:
 
 Answer naturally.
 
-Do not invent lore.
-
-If the answer is not present in the notes,
-say you don't know.
 """
         return prompt

@@ -56,12 +56,8 @@ class NemoChat:
 
         results = self.search.search_by_text(query)
 
-        if not results:
-            return {
-                "answer": "I couldn't find anything in your vault about that.",
-                "sources": []
-             }
-
+        # Keep the chat useful for general questions too. When the vault has no
+        # matching notes, the model can still answer without claiming vault sources.
         context = self.prompt_builder.build_context(results[:3])
 
         prompt = self.prompt_builder.build_prompt(question, context, self.memory.recent())

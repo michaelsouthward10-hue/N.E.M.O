@@ -39,8 +39,8 @@ class NemoDesktopApp:
         self.update_checking = False
 
         self.root.title("N.E.M.O — Narrative Engine for Mythological Organisation")
-        self.root.geometry("980x720")
-        self.root.minsize(700, 520)
+        self.root.geometry("920x640")
+        self.root.minsize(700, 500)
         self.root.configure(bg=BACKGROUND)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
 
@@ -67,8 +67,11 @@ class NemoDesktopApp:
         style.map("Accent.TButton", background=[("active", "#75d7c2"), ("disabled", "#506b66")])
 
     def _build_layout(self):
-        header = ttk.Frame(self.root, padding=(24, 20, 24, 12))
-        header.pack(fill="x")
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_rowconfigure(2, weight=1)
+
+        header = ttk.Frame(self.root, padding=(20, 14, 20, 8))
+        header.grid(row=0, column=0, sticky="ew")
 
         heading = ttk.Frame(header)
         heading.pack(side="left", fill="x", expand=True)
@@ -82,8 +85,8 @@ class NemoDesktopApp:
         self.status_var = tk.StringVar(value="Checking Ollama…")
         ttk.Label(header, textvariable=self.status_var, style="Muted.TLabel").pack(side="right", padx=(12, 0))
 
-        toolbar = ttk.Frame(self.root, padding=(24, 0, 24, 14))
-        toolbar.pack(fill="x")
+        toolbar = ttk.Frame(self.root, padding=(20, 0, 20, 8))
+        toolbar.grid(row=1, column=0, sticky="ew")
         self.vault_var = tk.StringVar(value=self._vault_label())
         ttk.Label(toolbar, textvariable=self.vault_var, style="Muted.TLabel").pack(side="left", fill="x", expand=True)
         self.vault_button = ttk.Button(toolbar, text="Choose vault", command=self._choose_vault)
@@ -96,7 +99,7 @@ class NemoDesktopApp:
         self.update_button.pack(side="right", padx=(8, 0))
 
         body = ttk.Frame(self.root, style="Surface.TFrame", padding=1)
-        body.pack(fill="both", expand=True, padx=24)
+        body.grid(row=2, column=0, sticky="nsew", padx=20)
         self.transcript = tk.Text(
             body,
             wrap="word",
@@ -121,22 +124,27 @@ class NemoDesktopApp:
         self.transcript.tag_configure("message", foreground=TEXT)
         self.transcript.tag_configure("source", foreground=MUTED, font=("Segoe UI", 9))
 
-        composer = ttk.Frame(self.root, padding=(24, 14, 24, 20))
-        composer.pack(fill="x")
+        composer = ttk.Frame(self.root, padding=(20, 8, 20, 12))
+        composer.grid(row=3, column=0, sticky="ew")
+        ttk.Label(composer, text="Message N.E.M.O", style="Muted.TLabel").pack(anchor="w", pady=(0, 4))
+        chat_bar = ttk.Frame(composer, style="Surface.TFrame", padding=(10, 5))
+        chat_bar.pack(fill="x")
         self.prompt_var = tk.StringVar()
         self.prompt_entry = tk.Entry(
-            composer,
+            chat_bar,
             textvariable=self.prompt_var,
             bg=SURFACE,
             fg=TEXT,
             insertbackground=TEXT,
             relief="flat",
             font=("Segoe UI", 11),
+            highlightthickness=0,
         )
-        self.prompt_entry.pack(side="left", fill="x", expand=True, ipady=12, padx=(0, 10))
+        self.prompt_entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(4, 12))
         self.prompt_entry.bind("<Return>", self._send_from_entry)
-        self.send_button = ttk.Button(composer, text="Send", style="Accent.TButton", command=self._send)
+        self.send_button = ttk.Button(chat_bar, text="Send", style="Accent.TButton", command=self._send)
         self.send_button.pack(side="right")
+        self.prompt_entry.bind("<FocusIn>", lambda _event: self.status_var.set("Type a question and press Enter to chat"))
         self.prompt_entry.focus_set()
 
     def _vault_label(self):
