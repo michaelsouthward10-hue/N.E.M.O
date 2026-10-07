@@ -26,6 +26,7 @@ $env:PYTHONUSERBASE = Join-Path $projectRoot ".venv\userbase"
     --windowed `
     --onedir `
     --name NEMO `
+    --icon (Join-Path $projectRoot "assets\NEMO.ico") `
     --distpath .nemo-release `
     --workpath .nemo-build\pyinstaller `
     --specpath .nemo-build\spec `
