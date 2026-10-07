@@ -18,11 +18,12 @@ from nemo.services.router import QuestionRouter
 from nemo.update_checker import check_for_update
 
 
-BACKGROUND = "#111820"
-SURFACE = "#1b2632"
-TEXT = "#edf2f7"
-MUTED = "#9aa8b6"
-ACCENT = "#5cc8b0"
+BACKGROUND = "#101923"
+SURFACE = "#182633"
+TEXT = "#f1eee4"
+MUTED = "#9aa9ad"
+ACCENT = "#d6b46a"
+SEA_GLASS = "#76b8ad"
 
 
 class NemoDesktopApp:
@@ -61,31 +62,37 @@ class NemoDesktopApp:
         style.configure("Surface.TFrame", background=SURFACE)
         style.configure("TLabel", background=BACKGROUND, foreground=TEXT, font=("Segoe UI", 10))
         style.configure("Muted.TLabel", background=BACKGROUND, foreground=MUTED, font=("Segoe UI", 9))
-        style.configure("Title.TLabel", background=BACKGROUND, foreground=TEXT, font=("Segoe UI Semibold", 20))
+        style.configure("Kicker.TLabel", background=BACKGROUND, foreground=SEA_GLASS, font=("Segoe UI", 8, "bold"))
+        style.configure("Title.TLabel", background=BACKGROUND, foreground=ACCENT, font=("Palatino Linotype", 23, "bold"))
         style.configure("TButton", font=("Segoe UI", 10), padding=(12, 8))
-        style.configure("Accent.TButton", background=ACCENT, foreground="#10221f")
-        style.map("Accent.TButton", background=[("active", "#75d7c2"), ("disabled", "#506b66")])
+        style.configure("Accent.TButton", background=ACCENT, foreground="#1c211f", borderwidth=0)
+        style.map("Accent.TButton", background=[("active", "#e5c77f"), ("disabled", "#756b50")])
 
     def _build_layout(self):
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(2, weight=1)
 
-        header = ttk.Frame(self.root, padding=(20, 14, 20, 8))
+        header = ttk.Frame(self.root, padding=(24, 18, 24, 12))
         header.grid(row=0, column=0, sticky="ew")
 
         heading = ttk.Frame(header)
         heading.pack(side="left", fill="x", expand=True)
-        ttk.Label(heading, text="N.E.M.O", style="Title.TLabel").pack(anchor="w")
+        ttk.Label(heading, text="✦  N.E.M.O  ✦", style="Title.TLabel").pack(anchor="w")
         ttk.Label(
             heading,
-            text="Your local assistant for the Obsidian vault",
+            text="THE ORACLE OF YOUR VAULT",
+            style="Kicker.TLabel",
+        ).pack(anchor="w", pady=(1, 0))
+        ttk.Label(
+            heading,
+            text="A quiet guide through your world of notes",
             style="Muted.TLabel",
-        ).pack(anchor="w", pady=(2, 0))
+        ).pack(anchor="w", pady=(4, 0))
 
         self.status_var = tk.StringVar(value="Checking Ollama…")
         ttk.Label(header, textvariable=self.status_var, style="Muted.TLabel").pack(side="right", padx=(12, 0))
 
-        toolbar = ttk.Frame(self.root, padding=(20, 0, 20, 8))
+        toolbar = ttk.Frame(self.root, padding=(24, 2, 24, 12))
         toolbar.grid(row=1, column=0, sticky="ew")
         self.vault_var = tk.StringVar(value=self._vault_label())
         ttk.Label(toolbar, textvariable=self.vault_var, style="Muted.TLabel").pack(side="left", fill="x", expand=True)
@@ -99,7 +106,7 @@ class NemoDesktopApp:
         self.update_button.pack(side="right", padx=(8, 0))
 
         body = ttk.Frame(self.root, style="Surface.TFrame", padding=1)
-        body.grid(row=2, column=0, sticky="nsew", padx=20)
+        body.grid(row=2, column=0, sticky="nsew", padx=24)
         self.transcript = tk.Text(
             body,
             wrap="word",
@@ -107,7 +114,7 @@ class NemoDesktopApp:
             bg=SURFACE,
             fg=TEXT,
             insertbackground=TEXT,
-            selectbackground="#315a62",
+            selectbackground="#36565a",
             relief="flat",
             padx=22,
             pady=20,
@@ -119,15 +126,15 @@ class NemoDesktopApp:
         self.transcript.configure(yscrollcommand=scrollbar.set)
         self.transcript.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
-        self.transcript.tag_configure("assistant-name", foreground=ACCENT, font=("Segoe UI Semibold", 10))
+        self.transcript.tag_configure("assistant-name", foreground=ACCENT, font=("Palatino Linotype", 11, "bold"))
         self.transcript.tag_configure("user-name", foreground="#9db7ff", font=("Segoe UI Semibold", 10))
         self.transcript.tag_configure("message", foreground=TEXT)
         self.transcript.tag_configure("source", foreground=MUTED, font=("Segoe UI", 9))
 
-        composer = ttk.Frame(self.root, padding=(20, 8, 20, 12))
+        composer = ttk.Frame(self.root, padding=(24, 12, 24, 18))
         composer.grid(row=3, column=0, sticky="ew")
-        ttk.Label(composer, text="Message N.E.M.O", style="Muted.TLabel").pack(anchor="w", pady=(0, 4))
-        chat_bar = ttk.Frame(composer, style="Surface.TFrame", padding=(10, 5))
+        ttk.Label(composer, text="SPEAK TO N.E.M.O", style="Kicker.TLabel").pack(anchor="w", pady=(0, 6))
+        chat_bar = ttk.Frame(composer, style="Surface.TFrame", padding=(10, 6))
         chat_bar.pack(fill="x")
         self.prompt_var = tk.StringVar()
         self.prompt_entry = tk.Entry(
