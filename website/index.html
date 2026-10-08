@@ -37,8 +37,8 @@
       </a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav id="site-nav" class="site-nav" aria-label="Main navigation">
-        <a href="#discover">Discover</a>
-        <a href="#pantheons">Pantheons</a>
+        <a href="library/">Library</a>
+        <a href="library/#traditions">Traditions</a>
         <a href="#quiz">Quizzes</a>
         <a href="#art-cards">Art cards</a>
       </nav>
@@ -65,7 +65,7 @@
           <div class="art-caption">
             <p>WISDOM &amp; THE CITY</p>
             <h2 id="featured-title">Athena and<br>the olive tree</h2>
-            <a href="#story">Open the story <span aria-hidden="true">↗</span></a>
+            <a href="stories/athena-and-the-olive-tree/">Open the story <span aria-hidden="true">↗</span></a>
           </div>
           <span class="star star-one" aria-hidden="true">✧</span>
           <span class="star star-two" aria-hidden="true">✦</span>
@@ -75,13 +75,13 @@
       <section class="collection page-width" id="pantheons" aria-labelledby="collection-title">
         <div class="section-heading">
           <div><p class="eyebrow">FOLLOW YOUR CURIOSITY</p><h2 id="collection-title">Where shall we wander?</h2></div>
-          <a class="text-link" href="#library">Explore the library <span aria-hidden="true">→</span></a>
+          <a class="text-link" href="library/">Explore the library <span aria-hidden="true">→</span></a>
         </div>
         <div class="pantheon-list" id="library">
-          <a class="pantheon" href="#story"><span class="pantheon-symbol" aria-hidden="true">Ω</span><span><small>THE CLASSICAL WORLD</small><strong>Greek &amp; Roman</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
-          <a class="pantheon" href="#story"><span class="pantheon-symbol norse" aria-hidden="true">ᛉ</span><span><small>THE NINE REALMS</small><strong>Norse &amp; Germanic</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
-          <a class="pantheon" href="#story"><span class="pantheon-symbol egypt" aria-hidden="true">☼</span><span><small>LAND OF THE PHARAOHS</small><strong>Egyptian</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
-          <a class="pantheon" href="#story"><span class="pantheon-symbol world" aria-hidden="true">✺</span><span><small>STORIES OF MANY LANDS</small><strong>Explore all traditions</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="pantheon" href="library/#greek"><span class="pantheon-symbol" aria-hidden="true">Ω</span><span><small>THE CLASSICAL WORLD</small><strong>Greek &amp; Roman</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="pantheon" href="library/#norse"><span class="pantheon-symbol norse" aria-hidden="true">ᛉ</span><span><small>THE NINE REALMS</small><strong>Norse &amp; Germanic</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="pantheon" href="library/#egyptian"><span class="pantheon-symbol egypt" aria-hidden="true">☼</span><span><small>LAND OF THE PHARAOHS</small><strong>Egyptian</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="pantheon" href="library/#world"><span class="pantheon-symbol world" aria-hidden="true">✺</span><span><small>STORIES OF MANY LANDS</small><strong>Explore all traditions</strong></span><span class="arrow" aria-hidden="true">↗</span></a>
         </div>
       </section>
 
@@ -91,7 +91,7 @@
           <p class="eyebrow">A LITTLE CHALLENGE</p>
           <h2>Test your<br>mythic memory.</h2>
           <p>Five questions. One fresh path through the stories you know.</p>
-          <a class="button button-parchment" href="#quiz-card">Take the daily quiz <span aria-hidden="true">→</span></a>
+          <a class="button button-parchment" href="#quiz-card">Take the five question quiz <span aria-hidden="true">→</span></a>
           <small class="quiz-foot">TODAY’S QUIZ · 5 QUESTIONS</small>
         </article>
 
@@ -101,38 +101,38 @@
             <a class="text-link" href="#art-title">See all <span aria-hidden="true">→</span></a>
           </div>
           <div class="art-card-list">
-            <a class="art-card athena-card" href="#story"><span class="figure-symbol" aria-hidden="true">☼</span><span class="card-caption"><small>GREEK · WISDOM</small><strong>Athena</strong></span></a>
-            <a class="art-card thor-card" href="#story"><span class="figure-symbol" aria-hidden="true">ᛟ</span><span class="card-caption"><small>NORSE · THUNDER</small><strong>Thor</strong></span></a>
-            <a class="art-card anansi-card" href="#story"><span class="figure-symbol" aria-hidden="true">✴</span><span class="card-caption"><small>ASHANTI · STORIES</small><strong>Anansi</strong></span></a>
+            <a class="art-card athena-card" href="stories/athena-and-the-olive-tree/"><span class="figure-symbol" aria-hidden="true">☼</span><span class="card-caption"><small>GREEK · WISDOM</small><strong>Athena</strong></span></a>
+            <a class="art-card thor-card" href="library/#norse"><span class="figure-symbol" aria-hidden="true">ᛟ</span><span class="card-caption"><small>NORSE · THUNDER</small><strong>Thor</strong></span></a>
+            <a class="art-card anansi-card" href="library/#world"><span class="figure-symbol" aria-hidden="true">✴</span><span class="card-caption"><small>ASHANTI · STORIES</small><strong>Anansi</strong></span></a>
           </div>
-          <p class="art-note">Illustrated story cards, made to collect and revisit.</p>
+          <p class="art-note">Illustrated story cards, made to collect and revisit. More cards are on the way.</p>
         </section>
       </section>
 
       <section class="quiz-detail page-width" id="quiz-card" aria-labelledby="quiz-title">
-        <div class="quiz-detail-copy"><p class="eyebrow">TODAY’S QUIZ</p><h2 id="quiz-title">A moment from Athena’s story</h2><p>According to the myth, what gift did Athena offer the people of Attica?</p></div>
+        <div class="quiz-detail-copy"><p class="eyebrow">TODAY’S QUIZ · <span id="quiz-progress">QUESTION 1 OF 5</span></p><h2 id="quiz-title">A moment from Athena’s story</h2><p id="quiz-question">According to Apollodorus, what did Athena plant on the Acropolis?</p></div>
         <form class="quiz-form" id="daily-quiz">
           <fieldset>
             <legend>Choose one answer</legend>
-            <label><input type="radio" name="answer" value="spring" required> A spring of seawater</label>
-            <label><input type="radio" name="answer" value="olive"> An olive tree</label>
-            <label><input type="radio" name="answer" value="horse"> A winged horse</label>
+            <label><input type="radio" name="answer" value="olive" required> An olive tree</label>
+            <label><input type="radio" name="answer" value="spring"> A spring of seawater</label>
+            <label><input type="radio" name="answer" value="horse"> A horse</label>
           </fieldset>
           <button class="button button-dark" type="submit">Check my answer <span aria-hidden="true">→</span></button>
-          <p class="quiz-result" aria-live="polite"></p>
+          <p class="quiz-result" aria-live="polite" role="status"></p>
         </form>
       </section>
 
       <section class="story-note page-width" id="story" aria-labelledby="story-title">
         <div class="story-symbol" aria-hidden="true">✦</div>
-        <div><p class="eyebrow">A NOTE FROM THE ARCHIVE</p><h2 id="story-title">Stories have many tellings.</h2><p>Myths live across languages, communities, and generations. We’ll share sources and context alongside each story, and make room for different versions.</p></div>
-        <a class="text-link" href="#pantheons">Browse the traditions <span aria-hidden="true">→</span></a>
+        <div><p class="eyebrow">A NOTE FROM THE ARCHIVE</p><h2 id="story-title">Stories have many tellings.</h2><p>Myths live across languages, communities, and generations. Each library story will name its sources, distinguish retellings from ancient texts, and make room for different versions.</p></div>
+        <a class="text-link" href="stories/athena-and-the-olive-tree/">Read a sourced story <span aria-hidden="true">→</span></a>
       </section>
 
       <section class="newsletter page-width" id="newsletter" aria-labelledby="newsletter-title">
         <div class="newsletter-icon" aria-hidden="true">✧</div>
         <div><p class="eyebrow">LETTERS FROM THE LIBRARY</p><h2 id="newsletter-title">A small wonder in your inbox.</h2><p>New myths, curious details, and notes from the archive—sent now and then.</p></div>
-        <p class="newsletter-status">Newsletter sign-up is coming soon.</p>
+        <p class="newsletter-status">Coming soon · No email addresses are collected here yet.</p>
       </section>
 
       <section class="nemo-banner page-width" id="nemo-download" aria-labelledby="nemo-title">
@@ -145,7 +145,7 @@
     <footer class="site-footer page-width">
       <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">✦</span><span>MYTHOS<small>A LIBRARY OF LEGENDS</small></span></a>
       <p>Stories gathered with curiosity and respect.</p>
-      <nav aria-label="Footer navigation"><a href="#story">About &amp; sources</a><a href="#newsletter">Newsletter</a><a href="https://github.com/michaelsouthward10-hue/N.E.M.O">N.E.M.O. on GitHub</a></nav>
+      <nav aria-label="Footer navigation"><a href="library/">Myth library</a><a href="#story">About &amp; sources</a><a href="#newsletter">Newsletter</a><a href="https://github.com/michaelsouthward10-hue/N.E.M.O">N.E.M.O. on GitHub</a></nav>
     </footer>
   </body>
 </html>

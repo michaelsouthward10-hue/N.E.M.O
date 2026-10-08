@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4ecdc">
+    <meta name="description" content="Browse the Mythos library: carefully sourced stories, gods, heroes, and traditions from around the world.">
+    <title>Myth Library | Mythos — A Library of Legends</title>
+    <link rel="canonical" href="https://mythoslibrary.com/library/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mythos">
+    <meta property="og:title" content="Myth Library | Mythos">
+    <meta property="og:description" content="Explore the growing library of sourced mythology stories and traditions.">
+    <meta property="og:url" content="https://mythoslibrary.com/library/">
+    <meta name="twitter:card" content="summary">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../content.css">
+    <script src="../script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="../" aria-label="Mythos home"><span class="brand-mark" aria-hidden="true">✦</span><span>MYTHOS<small>A LIBRARY OF LEGENDS</small></span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+        <a href="./" aria-current="page">Library</a><a href="#traditions">Traditions</a><a href="../#quiz">Quizzes</a><a href="../#art-cards">Art cards</a>
+      </nav>
+      <a class="nemo-link" href="https://github.com/michaelsouthward10-hue/N.E.M.O/releases/latest">◉ N.E.M.O. Desktop</a>
+    </header>
+    <main id="main" class="content-page page-width">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../">Home</a><span aria-hidden="true"> / </span><span aria-current="page">Library</span></nav>
+      <header class="content-heading">
+        <p class="eyebrow">THE MYTHOS ARCHIVE</p>
+        <h1>Stories worth<br><em>staying with.</em></h1>
+        <p>A growing collection of mythology, read through its sources and shared with care. Each entry names the tradition and the ancient or historical account it follows.</p>
+      </header>
+
+      <section class="library-tools" aria-label="Find stories">
+        <label for="story-search">Search the library</label>
+        <input id="story-search" type="search" placeholder="Try Athena, Greek, or wisdom" autocomplete="off">
+        <p id="search-status" aria-live="polite">1 story in the library</p>
+      </section>
+
+      <section class="library-results" aria-labelledby="stories-heading">
+        <h2 id="stories-heading">Stories and figures</h2>
+        <article class="library-card" data-search="athena greek attica olive tree poseidon wisdom acropolis classical">
+          <a class="library-card-art" href="../stories/athena-and-the-olive-tree/" aria-label="Read Athena and the olive tree"><span aria-hidden="true">✦</span><small>GREEK · ATTICA</small></a>
+          <div class="library-card-copy">
+            <p class="eyebrow">A GODDESS · A CITY · AN OLIVE TREE</p>
+            <h3><a href="../stories/athena-and-the-olive-tree/">Athena and the olive tree</a></h3>
+            <p>How Athena and Poseidon contended for Attica, and how one ancient account tells of the city’s naming.</p>
+            <div class="tag-row"><span>Greek mythology</span><span>4 min read</span><span>Sources included</span></div>
+          </div>
+        </article>
+        <p class="empty-search" hidden>No stories match that search yet. Try a god, place, or tradition.</p>
+      </section>
+
+      <section class="tradition-guide" id="traditions" aria-labelledby="tradition-heading">
+        <p class="eyebrow">A LIVING ARCHIVE</p>
+        <h2 id="tradition-heading">Explore by tradition</h2>
+        <p>Our library is starting with a sourced Greek story. Norse, Egyptian, and other traditions will be added as each entry is researched and its sources are ready.</p>
+        <div class="tradition-status-list">
+          <div id="greek"><span class="status-dot is-ready" aria-hidden="true"></span><strong>Greek &amp; Roman</strong><span>First story available</span><a href="../stories/athena-and-the-olive-tree/">Explore <span class="visually-hidden">Greek and Roman story</span> →</a></div>
+          <div id="norse"><span class="status-dot" aria-hidden="true"></span><strong>Norse &amp; Germanic</strong><span>Coming to the archive</span></div>
+          <div id="egyptian"><span class="status-dot" aria-hidden="true"></span><strong>Egyptian</strong><span>Coming to the archive</span></div>
+          <div id="world"><span class="status-dot" aria-hidden="true"></span><strong>Stories of many lands</strong><span>More traditions to come</span></div>
+        </div>
+      </section>
+      <aside class="editorial-note"><strong>Many tellings, named sources.</strong><p>Mythology is not one fixed set of stories. We’ll identify the account behind each retelling and make differences between sources visible.</p></aside>
+    </main>
+    <footer class="site-footer page-width">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">✦</span><span>MYTHOS<small>A LIBRARY OF LEGENDS</small></span></a>
+      <p>Stories gathered with curiosity and respect.</p>
+      <nav aria-label="Footer navigation"><a href="../">Home</a><a href="../#newsletter">Newsletter</a><a href="https://github.com/michaelsouthward10-hue/N.E.M.O">N.E.M.O. on GitHub</a></nav>
+    </footer>
+    <script src="search.js" defer></script>
+  </body>
+</html>
