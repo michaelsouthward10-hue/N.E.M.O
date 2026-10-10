@@ -20,7 +20,7 @@
 body {
   margin: 0;
   background-color: var(--paper); /* Solid parchment base 📜 */
-  background-image: url('images/olivebranch.png'), url('images/olivebranch.png');
+  background-image: url('images/Olive Branch Centerline Pillar.png'), url('images/Olive Branch Centerline Pillar.png');
   background-position: left top, right top;
   background-repeat: repeat-y, repeat-y;
 }
