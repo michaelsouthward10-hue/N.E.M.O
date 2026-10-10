@@ -22,7 +22,7 @@ body {
   background-color: var(--paper);
   
   /* Add background image properties */
-  background-image: url('images/olivebranch.jpeg'), url('images/olivebranch.jpeg');
+  background-image: url('images/olivebranch.jpg'), url('images/olivebranch.jpg');
   background-position: left top, right top;
   background-repeat: repeat-y, repeat-y;
 }
