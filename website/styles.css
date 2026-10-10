@@ -19,12 +19,7 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  background-color: var(--paper);
-  
-  /* Add background image properties */
-  background-image: url('images/olivebranch.jpg'), url('images/olivebranch.jpg');
-  background-position: left top, right top;
-  background-repeat: repeat-y, repeat-y;
+  background: var(--paper) url('images/olivebranch.jpg') repeat-y left top;
 }
 a { color: inherit; text-decoration: none; }
 button, input { font: inherit; }
