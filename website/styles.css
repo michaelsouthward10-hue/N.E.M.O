@@ -17,7 +17,15 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); }
+body {
+  margin: 0;
+  background-color: var(--paper);
+  
+  /* Add background image properties */
+  background-image: url('images/vines.png'), url('images/vines.png');
+  background-position: left top, right top;
+  background-repeat: repeat-y, repeat-y;
+}
 a { color: inherit; text-decoration: none; }
 button, input { font: inherit; }
 .page-width { 
