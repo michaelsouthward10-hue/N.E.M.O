@@ -31,7 +31,7 @@ button, input { font: inherit; }
   margin-inline: auto;                   /* Centers the container horizontally 🎯 */
   position: relative;
   z-index: 1;
-  background: var(--paper-light);
+  background: color-mix(in srgb, var(--paper-light) 90%, transparent);
   border: 1px solid var(--line);
   padding: 32px;
 }
