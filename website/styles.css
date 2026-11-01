@@ -284,3 +284,64 @@ h1 em { color: var(--gold); font-weight: 400; }
 @media (max-width: 600px) { .site-header-actions { gap:6px; }.site-header-actions .nemo-link { display:none; }.profile-shortcut { min-width:0; padding:4px; }.profile-shortcut-copy { display:none; } .member-page { padding-block:30px 50px; }.member-auth { grid-template-columns:1fr; gap:28px; padding:21px; }.account-panel { padding:20px; }.account-heading { align-items:start; flex-direction:column; }.account-actions,.story-fields,.scholar-progress { grid-template-columns:1fr; } }
 
 @media (prefers-reduced-motion: reduce) { :root { scroll-behavior: auto; } *,*::before,*::after { transition-duration: .01ms!important; } }
+
+:root[data-theme="norse"] .page-width {
+  background: #e7eadc;
+  border-color: #b7b082;
+}
+:root[data-theme="norse"] .site-header {
+  background: #e2e7d8ed;
+  border-bottom-color: var(--gold);
+}
+:root[data-theme="norse"] .article-body,
+:root[data-theme="norse"] .article-aside ul {
+  color: var(--ink);
+}
+:root[data-theme="norse"] .article-byline,
+:root[data-theme="norse"] .article-image figcaption {
+  color: var(--ink-soft);
+}
+:root[data-theme="norse"] .variant-note {
+  background: #304637;
+  border-left: 3px solid #b49a58;
+  color: #f2f0df;
+}
+:root[data-theme="norse"] .variant-note strong,
+:root[data-theme="norse"] .variant-note p {
+  color: #f2f0df;
+}
+:root[data-theme="norse"] .source-list {
+  padding: 24px;
+  border-top: 2px solid var(--gold);
+  background: #f2f0df;
+}
+:root[data-theme="norse"] .source-list h2,
+:root[data-theme="norse"] .source-list .eyebrow {
+  color: var(--ink);
+}
+:root[data-theme="norse"] .source-list li a,
+:root[data-theme="norse"] .article-aside > a,
+:root[data-theme="norse"] .article-next a {
+  color: #26372a;
+  text-decoration-color: var(--gold);
+}
+:root[data-theme="norse"] .source-list li span,
+:root[data-theme="norse"] .source-note {
+  color: #53634f;
+}
+:root[data-theme="norse"] .source-list li:target {
+  background: #e3e7d8;
+}
+:root[data-theme="norse"] .article-aside {
+  padding: 18px;
+  border-block: 1px solid var(--gold);
+  background: #e2e7d8;
+}
+:root[data-theme="norse"] .article-image {
+  border: 1px solid #b7a665;
+}
+:root[data-theme="norse"] .button-dark {
+  color: #f5f1df;
+  border: 1px solid #b49a58;
+  background: #1b2d22;
+}
