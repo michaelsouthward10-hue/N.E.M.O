@@ -20,6 +20,9 @@
 .library-card-art::before { position: absolute; width: 150px; height: 150px; border: 1px solid #f6e8bd7a; border-radius: 50%; box-shadow: 0 0 0 16px #f6e8bd12,0 0 0 34px #f6e8bd0d; content: ""; }
 .library-card-art > span { font: 85px var(--serif); text-shadow: 0 0 18px #fff2c966; }
 .library-card-art > small { position: absolute; right: 16px; bottom: 15px; left: 16px; color: #fff7e4; font-size: 9px; letter-spacing: .18em; }
+.library-card-art.norse-card-art { background: radial-gradient(circle at 72% 24%,#d5bf7b 0 3%,#c09c5a 3.5% 4%,transparent 4.5%),linear-gradient(150deg,#849078,#39483b 54%,#182520); }
+.library-card-art.norse-card-art::before { border-color:#e6d39c9c; box-shadow:0 0 0 16px #e6d39c18,0 0 0 34px #e6d39c10; }
+.library-card-art.norse-card-art > span { color:#e1cf9b; font-family:Georgia,"Times New Roman",serif; }
 .library-card-copy { align-self: center; padding: 25px clamp(20px, 4vw, 42px); }
 .library-card-copy .eyebrow { margin-bottom: 8px; }
 .library-card-copy h3 { margin: 0 0 9px; font: 500 clamp(24px, 3vw, 34px)/1.06 var(--serif); }

@@ -14,7 +14,7 @@
     <meta property="og:url" content="https://mythoslibrary.com/library/">
     <meta name="twitter:card" content="summary">
     <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="../content.css">
+    <link rel="stylesheet" href="../content.css?v=norse-library-20261101">
     <script src="../theme.js"></script>
     <script src="../membership-config.js"></script>
     <script type="module" src="../member-client.js"></script>
@@ -40,8 +40,8 @@
 
       <section class="library-tools" aria-label="Find stories">
         <label for="story-search">Search the library</label>
-        <input id="story-search" type="search" placeholder="Try Athena, Greek, or wisdom" autocomplete="off">
-        <p id="search-status" aria-live="polite">1 story in the library</p>
+        <input id="story-search" type="search" placeholder="Try Athena, Thor, Norse, or wisdom" autocomplete="off">
+        <p id="search-status" aria-live="polite">2 stories in the library</p>
       </section>
 
       <section class="library-results" aria-labelledby="stories-heading">
@@ -55,16 +55,25 @@
             <div class="tag-row"><span>Greek mythology</span><span>4 min read</span><span>Sources included</span></div>
           </div>
         </article>
+        <article class="library-card" data-search="thor norse germanic hymir midgard serpent jormungandr mjolnir sea fishing">
+          <a class="library-card-art norse-card-art" href="../stories/thor-and-the-midgard-serpent/" aria-label="Read Thor and the Midgard Serpent"><span aria-hidden="true">ᚦ</span><small>NORSE · THE OPEN SEA</small></a>
+          <div class="library-card-copy">
+            <p class="eyebrow">THUNDER · SEA · WORLD SERPENT</p>
+            <h3><a href="../stories/thor-and-the-midgard-serpent/">Thor and the Midgard Serpent</a></h3>
+            <p>Thor’s fishing voyage brings him face to face with Jörmungandr—and two old sources leave different details about the ending.</p>
+            <div class="tag-row"><span>Norse mythology</span><span>3 min read</span><span>Sources included</span></div>
+          </div>
+        </article>
         <p class="empty-search" hidden>No stories match that search yet. Try a god, place, or tradition.</p>
       </section>
 
       <section class="tradition-guide" id="traditions" aria-labelledby="tradition-heading">
         <p class="eyebrow">A LIVING ARCHIVE</p>
         <h2 id="tradition-heading">Explore by tradition</h2>
-        <p>Our library is starting with a sourced Greek story. Norse, Egyptian, and other traditions will be added as each entry is researched and its sources are ready.</p>
+        <p>Two sourced stories are now available: one Greek and one Norse. Each names its sources and makes differences between tellings visible; more traditions will be added as they are researched.</p>
         <div class="tradition-status-list">
-          <div id="greek"><span class="status-dot is-ready" aria-hidden="true"></span><strong>Greek &amp; Roman</strong><span>First story available</span><a href="../stories/athena-and-the-olive-tree/">Explore <span class="visually-hidden">Greek and Roman story</span> →</a></div>
-          <div id="norse"><span class="status-dot" aria-hidden="true"></span><strong>Norse &amp; Germanic</strong><span>Coming to the archive</span></div>
+          <div id="greek"><span class="status-dot is-ready" aria-hidden="true"></span><strong>Greek &amp; Roman</strong><span>One story available</span><a href="../stories/athena-and-the-olive-tree/">Explore <span class="visually-hidden">Greek and Roman story</span> →</a></div>
+          <div id="norse"><span class="status-dot is-ready" aria-hidden="true"></span><strong>Norse &amp; Germanic</strong><span>One story available</span><a href="../stories/thor-and-the-midgard-serpent/">Explore <span class="visually-hidden">Norse story</span> →</a></div>
           <div id="egyptian"><span class="status-dot" aria-hidden="true"></span><strong>Egyptian</strong><span>Coming to the archive</span></div>
           <div id="world"><span class="status-dot" aria-hidden="true"></span><strong>Stories of many lands</strong><span>More traditions to come</span></div>
         </div>
