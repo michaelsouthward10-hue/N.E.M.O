@@ -158,6 +158,7 @@ quiz?.addEventListener("submit", async (event) => {
 });
 
 if (quiz && quizQuestion && quizProgress && quizOptions && quizButton && quizResult) {
+  renderQuestion();
   quiz.addEventListener("reset", () => {
     questionIndex = 0;
     score = 0;

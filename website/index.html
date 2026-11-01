@@ -29,7 +29,7 @@
     <script src="theme.js"></script>
     <script src="membership-config.js"></script>
     <script type="module" src="member-client.js"></script>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="script.js?v=quiz-answer-fix-20261101"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -120,9 +120,9 @@
         <form class="quiz-form" id="daily-quiz">
           <fieldset>
             <legend>Choose one answer</legend>
-            <label><input type="radio" name="answer" value="olive" required> An olive tree</label>
-            <label><input type="radio" name="answer" value="spring"> A spring of seawater</label>
-            <label><input type="radio" name="answer" value="horse"> A horse</label>
+            <label><input type="radio" name="answer" value="0" required> An olive tree</label>
+            <label><input type="radio" name="answer" value="1"> A spring of seawater</label>
+            <label><input type="radio" name="answer" value="2"> A horse</label>
           </fieldset>
           <button class="button button-dark" type="submit">Check my answer <span aria-hidden="true">→</span></button>
           <p class="quiz-result" aria-live="polite" role="status"></p>
