@@ -1,0 +1,14 @@
+project:
+  name: NEMO
+  version: "1.0.0"
+
+vault:
+  path: ""
+
+ai:
+  provider: ollama
+  endpoint: "http://localhost:11434"
+  model: "qwen3:8b"
+
+display:
+  theme: cyan
