@@ -62,6 +62,11 @@
 .source-list li { padding-left: 3px; }
 .source-list li a { color: #624919; font-size: 15px; text-decoration: underline; text-decoration-color: #b49b6e; text-underline-offset: 3px; }
 .source-list li span { display: block; margin-top: 3px; color: #746652; font: 13px/1.5 var(--sans); }
+.citation { display:inline; margin-inline:2px; color:var(--gold); font:600 .72em/1 var(--sans); text-decoration:underline; text-underline-offset:2px; }
+.citation:hover,.citation:focus-visible { color:var(--ink); outline:2px solid var(--gold); outline-offset:2px; }
+.source-list li[id^="source-"] { scroll-margin-block:22px; padding-block:4px; border-radius:2px; }
+.source-list li:target { background:color-mix(in srgb,var(--gold) 12%,transparent); outline:1px solid var(--gold); outline-offset:3px; }
+.source-return { display:inline-block; margin-top:5px; color:var(--gold); font:600 10px var(--sans); text-decoration:underline; text-underline-offset:2px; }
 .source-note { margin-top: 18px; color: #746652; font: 12px/1.55 var(--sans); }
 .article-aside { position: sticky; top: 20px; margin-top: 9px; padding: 16px; border-block: 1px solid var(--line); }
 .article-aside .eyebrow { margin-bottom: 8px; }
