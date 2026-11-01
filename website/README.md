@@ -13,6 +13,9 @@ Open `index.html` in a browser. No build step or packages are required.
 - Direct links to primary texts and museum context from each published story.
 - Links to the N.E.M.O. desktop release.
 - A newsletter placeholder. It does not collect or send email addresses until a signup service and privacy wording are chosen.
+- A Fellow Scholar membership experience with Supabase account access, Stripe subscription functions, private wallpaper delivery, the Odin theme, and moderated community story submissions. See `../docs/website-membership-setup.md`; the secure service must be configured before sign-up is enabled.
+- Scholar accounts have a top-right god or goddess portrait, saved quiz experience and levels, plus portraits unlocked by earned levels or membership. Newsletter portrait unlocks are reserved for the future newsletter integration.
 - `robots.txt` and a sitemap for the public site at `https://mythoslibrary.com/`.
 
 This folder is a separate website from the N.E.M.O. desktop application. The site does not access a visitor’s Obsidian vault or local AI model. Tradition sections without published stories are labelled as in progress rather than presented as finished entries.
+

@@ -1,3 +1,5 @@
+import { recordQuizAttempt } from "./member-client.js";
+
 const menuButton = document.querySelector(".menu-toggle");
 const navigation = document.querySelector("#site-nav");
 
@@ -57,6 +59,7 @@ const questions = [
 let questionIndex = 0;
 let score = 0;
 let answered = false;
+let quizAnswers = [];
 
 function renderQuestion() {
   const question = questions[questionIndex];
@@ -80,12 +83,13 @@ function renderQuestion() {
   answered = false;
 }
 
-quiz?.addEventListener("submit", (event) => {
+quiz?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   if (quizButton.dataset.action === "restart") {
     questionIndex = 0;
     score = 0;
+    quizAnswers = [];
     delete quizButton.dataset.action;
     renderQuestion();
     return;
@@ -103,6 +107,33 @@ quiz?.addEventListener("submit", (event) => {
       quizButton.innerHTML = 'Play again <span aria-hidden="true">↻</span>';
       quizButton.dataset.action = "restart";
       answered = false;
+      quizButton.disabled = true;
+      const award = await recordQuizAttempt(quizAnswers);
+      if (award.state === "saved") {
+        if (award.xp_awarded === 0) {
+          quizResult.textContent += ` You have already earned today’s experience for this quiz. Your Scholar level is ${award.scholar_level} (${award.total_experience} XP).`;
+        } else {
+          const newlyUnlocked = (award.newly_unlocked_avatars || []).map((id) => id.charAt(0).toUpperCase() + id.slice(1));
+          quizResult.textContent += ` You earned ${award.xp_awarded} XP and are now Scholar level ${award.scholar_level}.`;
+          if (newlyUnlocked.length) quizResult.textContent += ` New portrait${newlyUnlocked.length > 1 ? "s" : ""} unlocked: ${newlyUnlocked.join(", ")}!`;
+          document.dispatchEvent(new CustomEvent("mythos:profile-refresh"));
+        }
+      } else if (award.state === "signed-out") {
+        quizResult.append(" Sign in to save XP and unlock god portraits. ");
+        const accountLink = document.createElement("a");
+        accountLink.href = "membership/#signin-form";
+        accountLink.textContent = "Sign in or create an account.";
+        quizResult.append(accountLink);
+      } else if (award.state === "unavailable") {
+        quizResult.append(" Create an account to save XP and unlock god portraits when member accounts are ready. ");
+        const accountLink = document.createElement("a");
+        accountLink.href = "membership/#signup-form";
+        accountLink.textContent = "Explore Scholar accounts.";
+        quizResult.append(accountLink);
+      } else {
+        quizResult.append(" Your score is shown, but your XP could not be saved. Please try again later.");
+      }
+      quizButton.disabled = false;
       return;
     }
     renderQuestion();
@@ -117,6 +148,7 @@ quiz?.addEventListener("submit", (event) => {
 
   const question = questions[questionIndex];
   const isCorrect = Number(selected) === question.correct;
+  quizAnswers.push(Number(selected));
   if (isCorrect) score += 1;
   quizResult.textContent = `${isCorrect ? "That’s right. " : "Not quite. "}${question.note}`;
   quizButton.innerHTML = questionIndex === questions.length - 1
@@ -129,7 +161,9 @@ if (quiz && quizQuestion && quizProgress && quizOptions && quizButton && quizRes
   quiz.addEventListener("reset", () => {
     questionIndex = 0;
     score = 0;
+    quizAnswers = [];
     delete quizButton.dataset.action;
     renderQuestion();
   });
 }
+
