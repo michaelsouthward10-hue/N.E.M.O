@@ -24,6 +24,52 @@ body {
   background-position: left top, right top;
   background-repeat: repeat-y, repeat-y;
 }
+:root[data-theme="norse"] {
+  color-scheme: light;
+  --ink: #26372a;
+  --ink-soft: #53634f;
+  --paper: #f2f0df;
+  --paper-light: #fbf9ee;
+  --line: #c9c39d;
+  --gold: #96773b;
+  --deep: #1b2d22;
+  --forest: #344838;
+}
+:root[data-theme="norse"] body {
+  background-color: var(--paper);
+  background-image: url("images/norse-runic-tile.svg"), url("images/norse-runic-tile.svg");
+  background-position: left top, right top;
+  background-repeat: repeat-y, repeat-y;
+  background-size: 170px 240px, 170px 240px;
+}
+:root[data-theme="norse"] .site-header { background: #f2f0dfed; border-color: var(--line); }
+:root[data-theme="norse"] .quiz-form label,
+:root[data-theme="norse"] .account-panel,
+:root[data-theme="norse"] .member-auth,
+:root[data-theme="norse"] .member-benefits article,
+:root[data-theme="norse"] .public-story { background: var(--paper-light); border-color: var(--line); color: var(--ink); }
+:root[data-theme="norse"] .quiz-form label:has(input:checked) { background: #e9e6d2; border-color: var(--gold); }
+:root[data-theme="norse"] .variant-note { background: #e9ecdf; border-color: var(--gold); }
+:root[data-theme="norse"] .norse-card-art { background: radial-gradient(circle at 72% 24%, #d4bf7a 0 3%, #c19b59 3.5% 4%, transparent 4.5%), linear-gradient(150deg, #8b9a7a, #3b503d 54%, #1b2d22); }
+:root[data-theme="norse"] .norse-card-art::before { border-color: #e6d39c9c; box-shadow: 0 0 0 16px #e6d39c18, 0 0 0 34px #e6d39c10; }
+:root[data-theme="norse"] .norse-card-art > span { color: #e1cf9b; }
+:root[data-theme="norse"] .story-symbol,
+:root[data-theme="norse"] .newsletter-icon,
+:root[data-theme="norse"] .nemo-sigil { color: var(--gold); border-color: var(--gold); }
+:root[data-theme="norse"] .pantheon-list,
+:root[data-theme="norse"] .pantheon { border-color: var(--line); }
+:root[data-theme="norse"] .tradition-entry:hover { background: #96773b12; }
+.tradition-status-list > .tradition-entry { display: grid; grid-template-columns: 18px minmax(170px, .8fr) 1fr auto; align-items: center; gap: 10px; min-height: 53px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 12px; text-decoration: none; }
+.tradition-entry-action { color: #735627; text-decoration: underline; text-underline-offset: 3px; }
+.tradition-status-list > .tradition-entry > span:nth-of-type(2) { color: #847660; }
+.tradition-status-list > .tradition-entry:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+@media (max-width: 600px) {
+  :root[data-theme="norse"] body { background-size: 58px 240px, 58px 240px; }
+  .tradition-status-list > .tradition-entry { grid-template-columns: 16px minmax(145px, .9fr) 1fr; gap: 8px; padding-block: 8px; }
+  .tradition-status-list > .tradition-entry > span:nth-of-type(2) { grid-column: 2; }
+  .tradition-status-list > .tradition-entry > .tradition-entry-action { grid-column: 3; grid-row: 1 / span 2; }
+}
+
 a { color: inherit; text-decoration: none; }
 button, input { font: inherit; }
 .page-width {
