@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5 — Constellation map navigation
+
+- Added zoom controls and Ctrl+scroll zooming to the constellation map.
+- Added middle-button dragging to pan across larger vault maps.
+
 ## 1.0.4 — Constellation and Oracle modes
 
 - Added a constellation map for exploring linked vault notes.
@@ -38,3 +43,4 @@ N.E.M.O. is now delivered as a Windows desktop application with a portable downl
 ## Earlier releases
 
 Versions 0.1 through 0.9.1 developed the project structure, vault indexing, local model integration, search, conversation context, and the relationship graph. See the repository history for those changes.
+
