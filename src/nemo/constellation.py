@@ -92,13 +92,27 @@ class ConstellationWindow:
         y_scroll = ttk.Scrollbar(canvas_frame, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(xscrollcommand=x_scroll.set, yscrollcommand=y_scroll.set)
         self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.canvas.bind("<Control-MouseWheel>", self._zoom_from_wheel)
+        self.canvas.bind("<ButtonPress-2>", self._start_pan)
+        self.canvas.bind("<B2-Motion>", self._pan)
+        self.canvas.bind("<ButtonRelease-2>", self._end_pan)
+        self.canvas.bind("<Enter>", lambda _event: self.canvas.focus_set())
         y_scroll.grid(row=0, column=1, sticky="ns")
         x_scroll.grid(row=1, column=0, sticky="ew")
 
         self.hint_var = tk.StringVar()
         footer = ttk.Frame(self.window, padding=(20, 2, 20, 14))
         footer.grid(row=2, column=0, sticky="ew")
-        ttk.Label(footer, textvariable=self.hint_var, style="Muted.TLabel").pack(side="left")
+        ttk.Label(footer, textvariable=self.hint_var, style="Muted.TLabel", wraplength=390, justify="left").pack(side="left")
+        zoom_controls = ttk.Frame(footer)
+        zoom_controls.pack(side="right", padx=(10, 10))
+        ttk.Label(zoom_controls, text="Zoom", style="Muted.TLabel").pack(side="left", padx=(0, 6))
+        ttk.Button(zoom_controls, text="−", width=3, command=lambda: self._change_zoom(0.85)).pack(side="left")
+        self.zoom_var = tk.StringVar(value="100%")
+        ttk.Label(zoom_controls, textvariable=self.zoom_var, style="Muted.TLabel", width=5, anchor="center").pack(side="left", padx=3)
+        ttk.Button(zoom_controls, text="+", width=3, command=lambda: self._change_zoom(1.18)).pack(side="left")
+        ttk.Button(zoom_controls, text="Reset", command=self._reset_zoom).pack(side="left", padx=(5, 0))
+        self.zoom_level = 1.0
         self._add_legend(footer)
         self.render()
 
@@ -280,14 +294,49 @@ class ConstellationWindow:
             self.canvas.tag_bind(tag, "<Leave>", lambda _event: self.canvas.configure(cursor=""))
 
         self.canvas.update_idletasks()
-        x_fraction = (self._center_x - self.canvas.winfo_width() / 2) / self._world_width
-        y_fraction = (self._center_y - self.canvas.winfo_height() / 2) / self._world_height
-        self.canvas.xview_moveto(max(0, x_fraction))
-        self.canvas.yview_moveto(max(0, y_fraction))
+        self._apply_canvas_zoom()
         self.hint_var.set(
-            f"{len(levels) - 1} linked notes shown · click a star to recenter, then Open note to open it in Obsidian"
+            f"{len(levels) - 1} linked notes shown · click a star to recenter · middle-drag to pan · Ctrl+scroll to zoom"
+            + " · Open note opens the center in Obsidian"
             + (" · map limited to the closest 120 notes" if truncated else "")
         )
+
+    def _change_zoom(self, factor):
+        self.zoom_level = min(2.0, max(0.55, self.zoom_level * factor))
+        self.render()
+
+    def _reset_zoom(self):
+        self.zoom_level = 1.0
+        self.render()
+
+    def _zoom_from_wheel(self, event):
+        self._change_zoom(1.12 if event.delta > 0 else 0.89)
+        return "break"
+
+    def _start_pan(self, event):
+        self.canvas.scan_mark(event.x, event.y)
+        self.canvas.configure(cursor="fleur")
+
+    def _pan(self, event):
+        self.canvas.scan_dragto(event.x, event.y, gain=1)
+
+    def _end_pan(self, _event):
+        self.canvas.configure(cursor="")
+
+    def _apply_canvas_zoom(self):
+        self.canvas.scale("all", 0, 0, self.zoom_level, self.zoom_level)
+        bbox = self.canvas.bbox("all")
+        width = max(self.canvas.winfo_width(), int(self._world_width * self.zoom_level))
+        height = max(self.canvas.winfo_height(), int(self._world_height * self.zoom_level))
+        if bbox:
+            width = max(width, bbox[2])
+            height = max(height, bbox[3])
+        self.canvas.configure(scrollregion=(0, 0, width, height))
+        self.zoom_var.set(f"{round(self.zoom_level * 100)}%")
+        center_x = self._center_x * self.zoom_level
+        center_y = self._center_y * self.zoom_level
+        self.canvas.xview_moveto(max(0, (center_x - self.canvas.winfo_width() / 2) / width))
+        self.canvas.yview_moveto(max(0, (center_y - self.canvas.winfo_height() / 2) / height))
 
     def _layout_dimensions(self, levels):
         self._positions = {}
@@ -316,3 +365,4 @@ class ConstellationWindow:
     @staticmethod
     def _short_title(title):
         return title if len(title) <= 22 else f"{title[:19]}…"
+
