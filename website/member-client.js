@@ -160,7 +160,7 @@ if (!ready) {
       if (xpProgress) xpProgress.value = xp % 100;
       renderAvatarCollection(profile);
     }
-    if (profile?.website_theme === "odin" && active) {
+    if (profile?.website_theme === "odin" && active && !document.documentElement.dataset.mythosRealm) {
       document.documentElement.dataset.theme = "odin";
       localStorage.setItem("mythos-theme", "odin");
     }

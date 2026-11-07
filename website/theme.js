@@ -1,11 +1,19 @@
 (() => {
   const root = document.documentElement;
   const validThemes = new Set(["odin", "norse"]);
+  const realm = root.dataset.mythosRealm;
 
   try {
     const savedTheme = localStorage.getItem("mythos-theme");
-    if (validThemes.has(savedTheme)) root.dataset.theme = savedTheme;
-  } catch { /* Private browsing can disable storage; the parchment theme remains. */ }
+    if (realm === "norse") {
+      root.dataset.theme = "norse";
+      localStorage.setItem("mythos-theme", "norse");
+    } else if (realm === "greek") {
+      delete root.dataset.theme;
+      localStorage.removeItem("mythos-theme");
+    } else if (realm === "selector") delete root.dataset.theme;
+    else if (validThemes.has(savedTheme)) root.dataset.theme = savedTheme;
+  } catch { /* Private browsing can disable storage; page realm styling still applies. */ }
 
   const applyTheme = (theme) => {
     if (validThemes.has(theme)) {
@@ -22,3 +30,4 @@
     if (target) applyTheme(target.dataset.mythosTheme);
   });
 })();
+

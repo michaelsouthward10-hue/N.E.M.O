@@ -345,3 +345,72 @@ h1 em { color: var(--gold); font-weight: 400; }
   border: 1px solid #b49a58;
   background: #1b2d22;
 }
+
+/* Realm gateway and focused mythology entry pages */
+.realm-home { min-height:100vh; color-scheme:dark; --ink:#eee8d8; --ink-soft:#c5c1b1; --paper:#17231e; --paper-light:#202d25; --line:#59634c; --gold:#c7a45e; --deep:#111a16; --forest:#263a2c; color:var(--ink); background:radial-gradient(ellipse at 50% 0%,#39483a 0,#1b2a22 42%,#111a16 100%); }
+.realm-home .site-header { min-height:78px; padding:16px max(32px,calc((100vw - 1120px)/2)); background:transparent; border:0; }
+.realm-home .brand { color:#f4ecdc; }
+.realm-home .realm-home-nav { display:flex; gap:25px; color:#d1cbbb; font-size:11px; }
+.realm-home-nav a:hover,.realm-signin:hover { color:#e0c47f; }
+.realm-signin { padding:10px 13px; border:1px solid #c7a45e8c; color:#f0e8d6; font-size:10px; white-space:nowrap; }
+.realm-signin span { margin-left:9px; color:var(--gold); }
+.realm-selector { width:min(1120px,calc(100% - 48px)); min-height:calc(100vh - 160px); margin:0 auto; padding:38px 0 28px; border:0; background:transparent; }
+.realm-intro { max-width:720px; margin:0 auto 28px; text-align:center; }
+.realm-intro .eyebrow { color:#d5b86d; }
+.realm-intro .eyebrow span { margin-right:8px; font-size:15px; }
+.realm-intro h1 { margin-bottom:13px; font-size:clamp(48px,6vw,70px); line-height:.95; color:#f1ecdf; }
+.realm-intro h1 em { color:#d2b66e; }
+.realm-intro>p:last-child { max-width:510px; margin:0 auto; color:#cbc5b3; font:16px/1.55 var(--serif); }
+.realm-choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.realm-choice { position:relative; display:flex; min-height:365px; align-items:end; overflow:hidden; isolation:isolate; border:1px solid #c7a45e66; color:#fff6e5; background:#303c31; box-shadow:0 18px 42px #080e0b66; }
+.realm-choice-art,.realm-choice-shade { position:absolute; z-index:-1; inset:0; width:100%; height:100%; }
+.realm-choice-art { object-fit:cover; transition:transform .55s; }
+.realm-choice:hover .realm-choice-art { transform:scale(1.045); }
+.realm-choice-shade { background:linear-gradient(180deg,#10191418 8%,#10191440 43%,#101914e8 100%); }
+.realm-choice-symbol { position:absolute; top:22px; right:25px; display:grid; width:48px; height:48px; place-items:center; border:1px solid #e4ca86b8; border-radius:50%; color:#ecd79d; font:27px var(--serif); text-shadow:0 2px 12px #101914; }
+.realm-choice-copy { display:block; max-width:440px; padding:25px 28px 26px; }
+.realm-choice-copy small,.realm-choice-copy strong,.realm-choice-copy>span,.realm-choice-copy b { display:block; }
+.realm-choice-copy small { color:#e4c979; font-size:8px; font-weight:700; letter-spacing:.19em; }
+.realm-choice-copy strong { margin:7px 0 6px; font:500 clamp(27px,3vw,38px)/1 var(--serif); }
+.realm-choice-copy>span { max-width:380px; color:#f0e8d6; font:14px/1.5 var(--serif); }
+.realm-choice-copy b { margin-top:18px; color:#e5ca7d; font-size:10px; letter-spacing:.04em; }
+.realm-choice-copy b span { margin-left:8px; font-size:14px; }
+.realm-coming { display:grid; grid-template-columns:1.4fr 1fr 1fr auto; align-items:center; gap:18px; margin-top:20px; padding:16px 18px; border-block:1px solid #c7a45e47; color:#d6d0bf; }
+.realm-coming .eyebrow { margin:0 0 4px; color:#c8ac65; font-size:8px; }
+.realm-coming h2 { margin:0; color:#eee7d7; font:500 19px var(--serif); }
+.realm-coming>p { margin:0; font-size:11px; white-space:nowrap; }
+.realm-coming>p span { margin-right:7px; color:#d0b66f; font-size:17px; }
+.realm-coming>p i { display:block; margin:3px 0 0 24px; color:#aaa690; font-size:9px; font-style:normal; }
+.realm-coming>a { color:#e0c37a; font-size:10px; white-space:nowrap; }
+.realm-footer { display:flex; align-items:center; justify-content:space-between; gap:18px; width:min(1120px,calc(100% - 48px)); margin:0 auto; padding:14px 0 22px; border:0; border-top:1px solid #c7a45e36; background:transparent; color:#b9b4a5; font-size:10px; }
+.realm-footer .brand { min-width:0; color:#f4ecdc; font-size:15px; }.realm-footer .brand-mark { width:25px;height:25px;font-size:13px; }.realm-footer .brand small { font-size:6px; }.realm-footer p { margin:0; }.realm-footer nav { display:flex; flex-wrap:wrap; gap:14px; }.realm-footer a:hover { color:#e0c37a; }
+.realm-switch-link { color:var(--gold)!important; font-weight:650; }
+.realm-landing-main { margin-block:28px 30px; }
+.realm-landing-main .breadcrumbs { margin-bottom:24px; }
+.realm-landing-hero { display:grid; grid-template-columns:.8fr 1.2fr; align-items:center; gap:36px; min-height:360px; }
+.realm-landing-copy h1 { margin:0 0 16px; font-size:clamp(42px,5vw,62px); }
+.realm-landing-copy>p:not(.eyebrow) { max-width:410px; margin-bottom:22px; color:var(--ink-soft); font:17px/1.55 var(--serif); }
+.realm-landing-art { width:100%; max-height:400px; aspect-ratio:1.55; object-fit:cover; border:1px solid var(--gold); box-shadow:0 14px 34px #18231c26; }
+.realm-featured { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-top:26px; padding:24px 0; border-block:1px solid var(--line); }
+.realm-featured .eyebrow { margin-bottom:5px; }.realm-featured h2 { margin:0 0 5px; font:500 27px var(--serif); }.realm-featured p:last-child { max-width:610px; margin:0; color:var(--ink-soft); font:14px/1.5 var(--serif); }
+.realm-featured .button { flex:0 0 auto; }
+.realm-footnote { display:flex; align-items:center; gap:14px; padding-top:19px; color:var(--ink-soft); }.realm-footnote>span { color:var(--gold); font-size:22px; }.realm-footnote p { flex:1; margin:0; font:13px/1.5 var(--serif); }.realm-footnote>a { color:var(--ink); font-size:10px; text-decoration:underline; text-decoration-color:var(--gold); text-underline-offset:4px; white-space:nowrap; }
+.realm-landing-norse .realm-landing-main { background:#e7eadc; }
+.realm-landing-norse .realm-featured { border-color:var(--gold); }
+@media(max-width:800px) {
+  .realm-home .site-header { padding-inline:24px; }.realm-home-nav { gap:13px!important; }
+  .realm-choice { min-height:320px; }.realm-choice-copy { padding:20px; }
+  .realm-coming { grid-template-columns:1fr 1fr; }.realm-coming>div { grid-column:1/-1; }
+  .realm-landing-hero { grid-template-columns:1fr 1fr; gap:22px; }
+}
+@media(max-width:600px) {
+  .realm-home .site-header { min-height:66px; padding:12px 18px; flex-wrap:wrap; }.realm-home .brand { margin-right:auto; }.realm-home-nav { order:3; width:100%; justify-content:center; gap:16px!important; font-size:10px!important; }.realm-signin { padding:8px; font-size:9px; }
+  .realm-selector { width:min(100% - 32px,480px); min-height:0; padding-top:32px; }.realm-intro { margin-bottom:21px; }.realm-intro h1 { font-size:50px; }.realm-intro>p:last-child { font-size:14px; }
+  .realm-choices { grid-template-columns:1fr; gap:12px; }.realm-choice { min-height:300px; }.realm-choice-copy { padding:19px; }.realm-choice-copy strong { font-size:31px; }
+  .realm-coming { gap:12px; padding:14px 4px; }.realm-coming h2 { font-size:17px; }.realm-coming>p { font-size:10px; }.realm-coming>a { grid-column:1/-1; }
+  .realm-footer { width:min(100% - 32px,480px); flex-wrap:wrap; }.realm-footer>p { order:3; width:100%; }.realm-footer nav { width:100%; }
+  .realm-landing-main { margin-block:14px 22px; padding:20px; }.realm-landing-main .breadcrumbs { margin-bottom:15px; }
+  .realm-landing-hero { grid-template-columns:1fr; gap:20px; }.realm-landing-copy h1 { font-size:45px; }.realm-landing-art { max-height:290px; aspect-ratio:1.25; }
+  .realm-featured { align-items:flex-start; flex-direction:column; gap:14px; padding-block:18px; }.realm-featured h2 { font-size:24px; }.realm-footnote { align-items:flex-start; flex-wrap:wrap; }.realm-footnote p { flex-basis:calc(100% - 40px); }.realm-footnote>a { margin-left:36px; }
+}
+
