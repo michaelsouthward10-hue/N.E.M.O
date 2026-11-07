@@ -12,6 +12,25 @@ if (navigation && document.body.dataset.page !== "realm-selector") {
   navigation.prepend(switchLink);
 }
 
+
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+if ("IntersectionObserver" in window && !reducedMotion.matches) {
+  const revealTargets = document.querySelectorAll(".realm-coming, .realm-featured, .realm-footnote, .source-list, .article-next");
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+
+  revealTargets.forEach((target) => {
+    target.dataset.reveal = "";
+    revealObserver.observe(target);
+  });
+  if (revealTargets.length) document.body.classList.add("motion-ready");
+}
+
 menuButton?.addEventListener("click", () => {
   const expanded = menuButton.getAttribute("aria-expanded") === "true";
   menuButton.setAttribute("aria-expanded", String(!expanded));

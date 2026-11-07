@@ -414,3 +414,36 @@ h1 em { color: var(--gold); font-weight: 400; }
   .realm-featured { align-items:flex-start; flex-direction:column; gap:14px; padding-block:18px; }.realm-featured h2 { font-size:24px; }.realm-footnote { align-items:flex-start; flex-wrap:wrap; }.realm-footnote p { flex-basis:calc(100% - 40px); }.realm-footnote>a { margin-left:36px; }
 }
 
+
+
+/* Subtle, accessible motion for entering and exploring realms */
+.realm-intro { animation:mythos-rise .65s cubic-bezier(.2,.7,.2,1) both; }
+.realm-choice { transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .3s ease,box-shadow .35s ease; }
+.realm-choice:nth-child(1) { animation:mythos-fade .55s .12s ease both; }
+.realm-choice:nth-child(2) { animation:mythos-fade .55s .24s ease both; }
+.realm-choice:hover,.realm-choice:focus-visible { transform:translateY(-4px); border-color:#e2c777; box-shadow:0 24px 50px #080e0b80,0 0 0 1px #e2c77755; }
+.realm-choice:focus-visible { outline:2px solid #f0d58c; outline-offset:3px; }
+.realm-choice-art { will-change:transform; }
+.realm-choice-symbol { transition:transform .35s ease,color .35s ease,text-shadow .35s ease; }
+.realm-choice:hover .realm-choice-symbol,.realm-choice:focus-visible .realm-choice-symbol { color:#fff0b7; text-shadow:0 0 18px #f0d58c99; transform:rotate(-7deg) scale(1.08); }
+.realm-choice-copy b span { display:inline-block; transition:transform .25s ease; }
+.realm-choice:hover .realm-choice-copy b span,.realm-choice:focus-visible .realm-choice-copy b span { transform:translateX(4px); }
+.realm-landing-main .breadcrumbs { animation:mythos-fade .45s ease both; }
+.realm-landing-copy { animation:mythos-rise .6s .08s cubic-bezier(.2,.7,.2,1) both; }
+.realm-landing-art { animation:mythos-art-in .75s .16s cubic-bezier(.2,.7,.2,1) both; transition:filter .45s ease,box-shadow .45s ease; }
+.realm-landing-art:hover { filter:brightness(1.04); box-shadow:0 20px 42px #18231c38; }
+body.motion-ready [data-reveal] { opacity:0; transform:translateY(16px); transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1); }
+body.motion-ready [data-reveal].is-visible { opacity:1; transform:translateY(0); }
+@keyframes mythos-rise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes mythos-fade { from { opacity:0; } to { opacity:1; } }
+@keyframes mythos-art-in { from { opacity:0; transform:translateY(9px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+@view-transition { navigation:auto; }
+::view-transition-old(root) { animation:mythos-fade .18s ease both; }
+::view-transition-new(root) { animation:mythos-page-in .32s ease both; }
+@keyframes mythos-page-in { from { opacity:.72; } to { opacity:1; } }
+@media(prefers-reduced-motion:reduce) {
+  .realm-intro,.realm-choice,.realm-landing-main .breadcrumbs,.realm-landing-copy,.realm-landing-art { animation:none!important; }
+  .realm-choice,.realm-choice-art,.realm-choice-symbol,.realm-choice-copy b span,.realm-landing-art { transition:none!important; transform:none!important; }
+  body.motion-ready [data-reveal] { opacity:1; transform:none; transition:none; }
+  ::view-transition-old(root),::view-transition-new(root) { animation:none!important; }
+}
