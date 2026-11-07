@@ -15,7 +15,7 @@ if (navigation && document.body.dataset.page !== "realm-selector") {
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 if ("IntersectionObserver" in window && !reducedMotion.matches) {
-  const revealTargets = document.querySelectorAll(".realm-coming, .realm-featured, .realm-footnote, .source-list, .article-next");
+  const revealTargets = document.querySelectorAll(".realm-coming, .realm-featured, .deity-guide, .realm-footnote, .source-list, .article-next");
   const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
@@ -30,6 +30,39 @@ if ("IntersectionObserver" in window && !reducedMotion.matches) {
   });
   if (revealTargets.length) document.body.classList.add("motion-ready");
 }
+
+const deityGuide = document.querySelector(".deity-guide");
+if (deityGuide) {
+  const search = deityGuide.querySelector("#deity-search");
+  const cards = [...deityGuide.querySelectorAll(".deity-card")];
+  const filters = [...deityGuide.querySelectorAll("[data-god-filter]")];
+  const status = deityGuide.querySelector("[data-guide-status]");
+  const empty = deityGuide.querySelector("[data-guide-empty]");
+  let activeKind = "all";
+
+  const updateDeityResults = () => {
+    const query = search.value.trim().toLocaleLowerCase();
+    let shown = 0;
+    cards.forEach((card) => {
+      const matchesKind = activeKind === "all" || card.dataset.kind === activeKind;
+      const matchesQuery = !query || card.dataset.search.includes(query);
+      card.hidden = !(matchesKind && matchesQuery);
+      if (!card.hidden) shown += 1;
+    });
+    status.textContent = `Showing ${shown} ${shown === 1 ? "figure" : "figures"}`;
+    empty.hidden = shown !== 0;
+  };
+
+  search?.addEventListener("input", updateDeityResults);
+  filters.forEach((button) => {
+    button.addEventListener("click", () => {
+      activeKind = button.dataset.godFilter;
+      filters.forEach((filter) => filter.setAttribute("aria-pressed", String(filter === button)));
+      updateDeityResults();
+    });
+  });
+}
+
 
 menuButton?.addEventListener("click", () => {
   const expanded = menuButton.getAttribute("aria-expanded") === "true";

@@ -447,3 +447,45 @@ body.motion-ready [data-reveal].is-visible { opacity:1; transform:translateY(0);
   body.motion-ready [data-reveal] { opacity:1; transform:none; transition:none; }
   ::view-transition-old(root),::view-transition-new(root) { animation:none!important; }
 }
+
+/* Browseable guide to Norse gods and figures */
+.deity-guide { margin-top:28px; padding:25px; border:1px solid var(--gold); background:var(--paper-light); }
+.deity-guide-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:20px; }
+.deity-guide-heading .eyebrow { margin-bottom:6px; }
+.deity-guide-heading h2 { margin:0 0 8px; font:500 clamp(27px,3.4vw,38px)/1.05 var(--serif); }
+.deity-guide-heading p:last-child { max-width:650px; margin:0; color:var(--ink-soft); font:14px/1.55 var(--serif); }
+.deity-guide-mark { display:grid; flex:0 0 52px; width:52px; height:52px; place-items:center; border:1px solid var(--gold); border-radius:50%; color:var(--gold); font:28px var(--serif); }
+.deity-controls { display:grid; grid-template-columns:minmax(180px,1fr) auto; align-items:end; gap:10px 16px; margin-bottom:17px; padding-block:15px; border-block:1px solid var(--line); }
+.deity-search-label { grid-column:1/-1; color:var(--ink-soft); font-size:10px; font-weight:650; letter-spacing:.08em; }
+.deity-controls input { width:100%; min-height:40px; padding:9px 11px; border:1px solid var(--line); color:var(--ink); background:var(--paper); font:13px var(--sans); }
+.deity-filters { display:flex; flex-wrap:wrap; gap:5px; }
+.deity-filters button { min-height:34px; padding:7px 10px; border:1px solid var(--line); color:var(--ink-soft); background:transparent; font-size:9px; cursor:pointer; transition:color .2s,border-color .2s,background .2s; }
+.deity-filters button:hover,.deity-filters button[aria-pressed="true"] { border-color:var(--gold); color:var(--ink); background:#96773b12; }
+.deity-filters button:focus-visible,.deity-search-label:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+.deity-results { grid-column:1/-1; margin:0; color:var(--ink-soft); font-size:10px; }
+.deity-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+.deity-card { min-width:0; border:1px solid var(--line); background:var(--paper); transition:border-color .22s,box-shadow .22s; }
+.deity-card:hover,.deity-card[open] { border-color:var(--gold); box-shadow:0 5px 16px #1b2d2210; }
+.deity-card[hidden],.deity-empty[hidden] { display:none!important; }
+.deity-card summary { min-height:178px; padding:15px; list-style:none; cursor:pointer; }
+.deity-card summary::-webkit-details-marker { display:none; }
+.deity-kind { display:block; margin-bottom:7px; color:var(--gold); font-size:8px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; }
+.deity-card h3 { margin:0 0 7px; color:var(--ink); font:500 23px/1 var(--serif); }
+.deity-card summary>p { min-height:57px; margin:0; color:var(--ink-soft); font:12px/1.5 var(--serif); }
+.deity-prompt { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px; color:var(--ink); font-size:9px; }
+.deity-prompt>span { color:var(--gold); font-size:15px; transition:transform .2s; }
+.deity-card[open] .deity-prompt>span { transform:rotate(45deg); }
+.deity-stories { padding:13px 15px 15px; border-top:1px solid var(--line); background:color-mix(in srgb,var(--paper-light) 74%,var(--paper)); }
+.deity-stories h4 { margin:0 0 6px; color:var(--ink); font:600 11px var(--serif); }
+.deity-stories p { margin:0 0 9px; color:var(--ink-soft); font:11px/1.5 var(--serif); }
+.deity-stories a { display:inline-block; margin:2px 9px 2px 0; color:var(--ink); font-size:9px; text-decoration:underline; text-decoration-color:var(--gold); text-underline-offset:3px; }
+.deity-stories a:hover { color:var(--gold); }
+.deity-empty { margin:0; padding:24px 10px; color:var(--ink-soft); font:italic 14px var(--serif); text-align:center; }
+.deity-guide-note { margin:16px 0 0; padding-top:13px; border-top:1px solid var(--line); color:var(--ink-soft); font:11px/1.55 var(--serif); }
+.deity-guide-note a { color:var(--ink); text-decoration:underline; text-decoration-color:var(--gold); text-underline-offset:3px; }
+
+
+@media(max-width:800px) { .deity-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) {
+  .deity-guide { margin-top:20px; padding:17px; }.deity-guide-heading { align-items:flex-start; gap:10px; }.deity-guide-mark { flex-basis:39px; width:39px; height:39px; font-size:22px; }.deity-guide-heading h2 { font-size:26px; }.deity-guide-heading p:last-child { font-size:12px; }.deity-controls { grid-template-columns:1fr; }.deity-search-label,.deity-results { grid-column:auto; }.deity-filters { gap:4px; }.deity-filters button { flex:1 1 auto; padding-inline:7px; }.deity-grid { grid-template-columns:1fr; }.deity-card summary { min-height:0; }.deity-card summary>p { min-height:0; }
+}
