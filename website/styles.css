@@ -366,7 +366,7 @@ h1 em { color: var(--gold); font-weight: 400; }
 .realm-choice-art,.realm-choice-shade { position:absolute; z-index:-1; inset:0; width:100%; height:100%; }
 .realm-choice-art { object-fit:cover; transition:transform .55s; }
 .realm-choice:hover .realm-choice-art { transform:scale(1.045); }
-.realm-choice-shade { background:linear-gradient(180deg,#10191418 8%,#10191440 43%,#101914e8 100%); }
+.realm-choice-shade { background:linear-gradient(180deg,#10191418 8%,#10191428 48%,#101914a8 100%); }
 .realm-choice-symbol { position:absolute; top:22px; right:25px; display:grid; width:48px; height:48px; place-items:center; border:1px solid #e4ca86b8; border-radius:50%; color:#ecd79d; font:27px var(--serif); text-shadow:0 2px 12px #101914; }
 .realm-choice-copy { display:block; max-width:440px; padding:25px 28px 26px; }
 .realm-choice-copy small,.realm-choice-copy strong,.realm-choice-copy>span,.realm-choice-copy b { display:block; }
