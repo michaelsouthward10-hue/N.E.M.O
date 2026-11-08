@@ -1,6 +1,8 @@
 """Interactive constellation view for linked notes in an Obsidian vault."""
 
 from math import cos, pi, sin
+import random
+import time
 import tkinter as tk
 from tkinter import ttk
 
@@ -13,6 +15,9 @@ ACCENT = "#d6b46a"
 SEA_GLASS = "#76b8ad"
 OUTER_STAR = "#46636d"
 EDGE = "#354650"
+STAR_DUST = ("#263743", "#354652", "#465660", "#5f7075")
+STAR_GLOW = ("#5b543f", "#8b7546", "#c5a75e", "#f1d894")
+SEA_GLOW = ("#365b5a", "#4d817b", "#72b7aa", "#b3e4d7")
 MAX_VISIBLE_NOTES = 120
 NOTES_PER_RING = 18
 
@@ -33,8 +38,13 @@ class ConstellationWindow:
         self.window.geometry("900x650")
         self.window.minsize(680, 500)
         self.window.configure(bg=BACKGROUND)
+        self.window.protocol("WM_DELETE_WINDOW", self._close)
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_rowconfigure(1, weight=1)
+        self._twinkles = []
+        self._pulse_edges = []
+        self._animation_frame = 0
+        self._animation_after = None
 
         header = ttk.Frame(self.window, padding=(20, 16, 20, 10))
         header.grid(row=0, column=0, sticky="ew")
@@ -240,8 +250,11 @@ class ConstellationWindow:
         depth = 1 if self.depth_var.get().startswith("1") else 2
         levels, truncated = self._visible_levels(center, depth)
         self.canvas.delete("all")
+        self._twinkles = []
+        self._pulse_edges = []
         self._layout_dimensions(levels)
         self.canvas.configure(scrollregion=(0, 0, self._world_width, self._world_height))
+        self._draw_starfield()
 
         for source, target in sorted(self.edges, key=lambda edge: (edge[0].casefold(), edge[1].casefold())):
             if source not in levels or target not in levels:
@@ -265,20 +278,46 @@ class ConstellationWindow:
                 arrow=tk.LAST,
                 arrowshape=(8, 10, 4),
             )
+            if source == center or target == center:
+                halo = self.canvas.create_oval(
+                    start_x - 5, start_y - 5, start_x + 5, start_y + 5,
+                    fill="", outline="#8e805a", width=2,
+                )
+                spark = self.canvas.create_oval(
+                    start_x - 2, start_y - 2, start_x + 2, start_y + 2,
+                    fill="#f1d894", outline="",
+                )
+                phase = (len(self._pulse_edges) * 0.618) % 1
+                self._pulse_edges.append((halo, spark, start_x, start_y, end_x, end_y, phase))
 
         for title, level in levels.items():
             x, y = self._positions[title]
             color = ACCENT if level == 0 else SEA_GLASS if level == 1 else OUTER_STAR
             outline = "#f1d894" if level == 0 else "#a4d2c8" if level == 1 else "#78909a"
             tag = f"star-{len(self.canvas.find_all())}"
+            halo_color = STAR_GLOW if level == 0 else SEA_GLOW
+            halo = self.canvas.create_oval(
+                x - 24, y - 24, x + 24, y + 24,
+                fill="", outline=halo_color[0], width=2 if level == 0 else 1,
+                tags=(tag,),
+            )
+            self._twinkles.append((halo, level * 0.9, halo_color, "outline"))
             self.canvas.create_oval(
-                x - 17,
-                y - 17,
-                x + 17,
-                y + 17,
+                x - 19, y - 19, x + 19, y + 19,
+                fill="", outline="#65716d" if level == 2 else "#7e8d81", width=1,
+                tags=(tag,),
+            )
+            self.canvas.create_polygon(
+                *self._star_points(x, y, 17 if level == 0 else 14, 5 if level == 0 else 4),
                 fill=color,
                 outline=outline,
-                width=2,
+                width=1.5,
+                tags=(tag,),
+            )
+            self.canvas.create_oval(
+                x - 3, y - 3, x + 3, y + 3,
+                fill="#fff2c5" if level == 0 else "#d9fff1",
+                outline="",
                 tags=(tag,),
             )
             self.canvas.create_text(
@@ -300,6 +339,77 @@ class ConstellationWindow:
             + " · Open note opens the center in Obsidian"
             + (" · map limited to the closest 120 notes" if truncated else "")
         )
+        self._schedule_animation()
+
+    def _draw_starfield(self):
+        rng = random.Random(73)
+        area = self._world_width * self._world_height
+        star_count = max(90, min(260, area // 6500))
+        for _ in range(star_count):
+            x = rng.uniform(8, self._world_width - 8)
+            y = rng.uniform(8, self._world_height - 8)
+            radius = rng.choice((0.8, 1.0, 1.2, 1.5))
+            color = rng.choice(STAR_DUST[:3])
+            self.canvas.create_oval(
+                x - radius, y - radius, x + radius, y + radius,
+                fill=color, outline="", tags=("star-dust",),
+            )
+
+        for _ in range(max(12, star_count // 12)):
+            x = rng.uniform(18, self._world_width - 18)
+            y = rng.uniform(18, self._world_height - 18)
+            radius = rng.choice((1.3, 1.7, 2.1))
+            dot = self.canvas.create_oval(
+                x - radius, y - radius, x + radius, y + radius,
+                fill=STAR_DUST[1], outline="", tags=("twinkle",),
+            )
+            self._twinkles.append((dot, rng.uniform(0, 2 * pi), STAR_DUST, "fill"))
+            if radius > 1.5:
+                ray = self.canvas.create_line(
+                    x - radius * 2, y, x + radius * 2, y,
+                    fill=STAR_DUST[0], width=1, tags=("twinkle",),
+                )
+                self._twinkles.append((ray, rng.uniform(0, 2 * pi), STAR_DUST, "fill"))
+
+    @staticmethod
+    def _star_points(x, y, outer_radius, inner_radius, points=8):
+        coordinates = []
+        for index in range(points * 2):
+            angle = -pi / 2 + index * pi / points
+            radius = outer_radius if index % 2 == 0 else inner_radius
+            coordinates.extend((x + cos(angle) * radius, y + sin(angle) * radius))
+        return coordinates
+
+    def _schedule_animation(self):
+        if self._animation_after is None and self.window.winfo_exists():
+            self._animation_after = self.window.after(100, self._animate)
+
+    def _animate(self):
+        self._animation_after = None
+        if not self.window.winfo_exists():
+            return
+        now = time.monotonic()
+        for item, phase, palette, option in self._twinkles:
+            shimmer = (sin(now * 1.35 + phase) + 1) / 2
+            shade = min(len(palette) - 1, int(shimmer * len(palette)))
+            try:
+                self.canvas.itemconfigure(item, **{option: palette[shade]})
+            except tk.TclError:
+                continue
+        for halo, spark, x1, y1, x2, y2, phase in self._pulse_edges:
+            progress = (now * 0.22 + phase) % 1
+            x = (x1 + (x2 - x1) * progress) * self.zoom_level
+            y = (y1 + (y2 - y1) * progress) * self.zoom_level
+            self.canvas.coords(halo, x - 5, y - 5, x + 5, y + 5)
+            self.canvas.coords(spark, x - 2, y - 2, x + 2, y + 2)
+        self._animation_frame += 1
+        self._schedule_animation()
+
+    def _close(self):
+        if self._animation_after is not None:
+            self.window.after_cancel(self._animation_after)
+            self._animation_after = None
+        self.window.destroy()
 
     def _change_zoom(self, factor):
         self.zoom_level = min(2.0, max(0.55, self.zoom_level * factor))
@@ -333,6 +443,16 @@ class ConstellationWindow:
             height = max(height, bbox[3])
         self.canvas.configure(scrollregion=(0, 0, width, height))
         self.zoom_var.set(f"{round(self.zoom_level * 100)}%")
+        self._scroll_width = width
+        self._scroll_height = height
+        self._center_map_view()
+        self.canvas.after(80, self._center_map_view)
+
+    def _center_map_view(self):
+        if not self.canvas.winfo_exists():
+            return
+        width = getattr(self, "_scroll_width", self._world_width)
+        height = getattr(self, "_scroll_height", self._world_height)
         center_x = self._center_x * self.zoom_level
         center_y = self._center_y * self.zoom_level
         self.canvas.xview_moveto(max(0, (center_x - self.canvas.winfo_width() / 2) / width))
