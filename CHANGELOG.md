@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.6 — Constellation starfield
+
+- Added a twinkling starfield and star-shaped note markers with soft halos.
+- Added moving lights along links between notes.
+- Centered the selected note when the map opens or recenters.
+
 ## 1.0.5 — Constellation map navigation
 
 - Added zoom controls and Ctrl+scroll zooming to the constellation map.
