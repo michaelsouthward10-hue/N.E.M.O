@@ -103,6 +103,9 @@ class ConstellationWindow:
         self.canvas.configure(xscrollcommand=x_scroll.set, yscrollcommand=y_scroll.set)
         self.canvas.grid(row=0, column=0, sticky="nsew")
         self.canvas.bind("<Control-MouseWheel>", self._zoom_from_wheel)
+        self.canvas.bind("<ButtonPress-1>", self._start_pan)
+        self.canvas.bind("<B1-Motion>", self._pan)
+        self.canvas.bind("<ButtonRelease-1>", self._end_pan)
         self.canvas.bind("<ButtonPress-2>", self._start_pan)
         self.canvas.bind("<B2-Motion>", self._pan)
         self.canvas.bind("<ButtonRelease-2>", self._end_pan)
@@ -252,6 +255,7 @@ class ConstellationWindow:
         self.canvas.delete("all")
         self._twinkles = []
         self._pulse_edges = []
+        self._note_by_tag = {}
         self._layout_dimensions(levels)
         self.canvas.configure(scrollregion=(0, 0, self._world_width, self._world_height))
         self._draw_starfield()
@@ -295,6 +299,7 @@ class ConstellationWindow:
             color = ACCENT if level == 0 else SEA_GLASS if level == 1 else OUTER_STAR
             outline = "#f1d894" if level == 0 else "#a4d2c8" if level == 1 else "#78909a"
             tag = f"star-{len(self.canvas.find_all())}"
+            self._note_by_tag[tag] = title
             halo_color = STAR_GLOW if level == 0 else SEA_GLOW
             halo = self.canvas.create_oval(
                 x - 24, y - 24, x + 24, y + 24,
@@ -328,14 +333,13 @@ class ConstellationWindow:
                 font=("Segoe UI", 9, "bold" if level == 0 else "normal"),
                 tags=(tag,),
             )
-            self.canvas.tag_bind(tag, "<Button-1>", lambda _event, note=title: self._select_note(note))
             self.canvas.tag_bind(tag, "<Enter>", lambda _event: self.canvas.configure(cursor="hand2"))
             self.canvas.tag_bind(tag, "<Leave>", lambda _event: self.canvas.configure(cursor=""))
 
         self.canvas.update_idletasks()
         self._apply_canvas_zoom()
         self.hint_var.set(
-            f"{len(levels) - 1} linked notes shown · click a star to recenter · middle-drag to pan · Ctrl+scroll to zoom"
+            f"{len(levels) - 1} linked notes shown · drag anywhere to pan freely · click a star to recenter · Ctrl+scroll to zoom"
             + " · Open note opens the center in Obsidian"
             + (" · map limited to the closest 120 notes" if truncated else "")
         )
@@ -424,14 +428,32 @@ class ConstellationWindow:
         return "break"
 
     def _start_pan(self, event):
+        self._pan_origin = (event.x, event.y)
+        self._pan_moved = False
+        self._pending_note = None
+        if getattr(event, "num", None) == 1:
+            current = self.canvas.find_withtag("current")
+            if current:
+                for tag in self.canvas.gettags(current[0]):
+                    if tag in self._note_by_tag:
+                        self._pending_note = self._note_by_tag[tag]
+                        break
         self.canvas.scan_mark(event.x, event.y)
         self.canvas.configure(cursor="fleur")
 
     def _pan(self, event):
+        dx = event.x - self._pan_origin[0]
+        dy = event.y - self._pan_origin[1]
+        if dx * dx + dy * dy >= 16:
+            self._pan_moved = True
         self.canvas.scan_dragto(event.x, event.y, gain=1)
 
-    def _end_pan(self, _event):
+    def _end_pan(self, event):
         self.canvas.configure(cursor="")
+        if getattr(event, "num", None) == 1 and not self._pan_moved and self._pending_note:
+            self._select_note(self._pending_note)
+        self._pending_note = None
+        self._pan_origin = None
 
     def _apply_canvas_zoom(self):
         self.canvas.scale("all", 0, 0, self.zoom_level, self.zoom_level)

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.7 — Free constellation movement
+
+- Pan the constellation map in any direction by dragging with the left mouse button.
+- Keep clicking a star to recenter the map on its note.
+
 ## 1.0.6 — Constellation starfield
 
 - Added a twinkling starfield and star-shaped note markers with soft halos.
