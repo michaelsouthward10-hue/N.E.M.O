@@ -55,6 +55,7 @@ class NemoDesktopApp:
             "Ask about your Obsidian vault, create a note, or reindex after editing notes.",
             "assistant",
         )
+        self._restore_conversation()
         self._check_ollama()
         self.root.after(120, self._poll_results)
 
@@ -109,6 +110,8 @@ class NemoDesktopApp:
         self.update_button.pack(side="right", padx=(8, 0))
         self.map_button = ttk.Button(toolbar, text="Constellation", command=self._show_constellation)
         self.map_button.pack(side="right", padx=(8, 0))
+
+        ttk.Button(toolbar, text="Chat log", command=self._show_chat_log).pack(side="right", padx=(8, 0))
 
         body = ttk.Frame(self.root, style="Surface.TFrame", padding=1)
         body.grid(row=2, column=0, sticky="nsew", padx=24)
@@ -495,6 +498,29 @@ class NemoDesktopApp:
         title_entry.bind("<Return>", lambda _event: body_text.focus_set())
         title_entry.focus_set()
 
+    def _restore_conversation(self):
+        self.transcript.configure(state="normal")
+        self.transcript.delete("1.0", "end")
+        self.transcript.configure(state="disabled")
+        for item in self.chat.memory.recent(40):
+            role = item["role"]
+            self._append_message("You" if role == "user" else "N.E.M.O", item["message"], role)
+        self._append_message("N.E.M.O", "Chat history is saved for this vault. I can recall relevant earlier discussions. Use Chat log to browse the full history.", "assistant")
+
+    def _show_chat_log(self):
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Saved chat log")
+        dialog.geometry("800x600")
+        text = tk.Text(dialog, wrap="word", padx=16, pady=16)
+        scroll = ttk.Scrollbar(dialog, orient="vertical", command=text.yview)
+        text.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+        text.pack(fill="both", expand=True)
+        for item in self.chat.memory.history:
+            text.insert("end", f"{item['role'].capitalize()}: {item['message']}\n\n")
+        text.configure(state="disabled")
+        text.see("end")
+
     def _choose_vault(self):
         current = self.settings.get("vault", {}).get("path", "")
         path = filedialog.askdirectory(
@@ -506,7 +532,8 @@ class NemoDesktopApp:
             return
         self.settings.setdefault("vault", {})["path"] = path
         save_settings(self.settings)
-        self.chat.vault_path = Path(path)
+        self.chat.set_vault(path)
+        self._restore_conversation()
         self.vault_var.set(self._vault_label())
         self.status_var.set("Vault selected · reindex to load its notes")
 

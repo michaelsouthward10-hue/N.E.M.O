@@ -17,6 +17,7 @@ The installer does not require administrator access. The Ollama model is downloa
 
 - Searches indexed Markdown notes and opens answer sources in Obsidian when clicked.
 - Answers from matching note content with a locally running Ollama model.
+- Saves chat messages locally in a separate log for each vault, restores recent messages after restarting, and searches older discussions for relevant context. Use **Chat log** to browse the full saved conversation.
 - Finds paths between notes using Obsidian `[[wikilinks]]`.
 - Explores linked notes in a constellation map and opens selected notes in Obsidian.
 - Offers Oracle modes to find connections, summarize a topic, and develop an idea with vault context.
@@ -41,3 +42,11 @@ For bugs and feature ideas, open an issue in the [N.E.M.O. repository](https://g
 To build the Windows desktop app, install Python 3.10 or later and run `scripts\build_windows.ps1` from the project folder. The script creates `.nemo-release\NEMO` and `.nemo-release\NEMO-Windows-Portable.zip`. If Inno Setup is installed, it also creates a setup program in `.nemo-release\installer`.
 
 The optional Windows packaging dependency is listed in `requirements-build.txt`; runtime dependencies are listed in `requirements.txt`. Build on Windows to produce the Windows application.
+
+## Saved conversations
+
+Chat logs have no message-count cap and are stored outside the vault in the application data directory, under `conversations` (normally `%LOCALAPPDATA%\NEMO\conversations` for the packaged app; `data/conversations` when running from this source checkout). Each vault path has its own SQLite log. Moving or renaming a vault starts a separate history. Earlier conversations from versions without saved history cannot be recovered.
+
+For each answer, N.E.M.O searches all saved messages by topic keywords and includes matching older exchanges alongside recent turns. It also uses this context when developing ideas or drafting notes. The model has a finite context window: the archive is not truncated, but individual requests contain selected excerpts rather than the entire log. Naming a topic helps recall; keyword retrieval may miss paraphrases. Previous suggestions are distinguished from facts established by your notes.
+
+The desktop chat restores the latest 40 messages; **Chat log** shows the complete saved history. Chat text is private local data and is sent, together with relevant notes, only to your configured Ollama endpoint when needed for an answer. Logs remain on disk until removed; no automatic retention limit is applied.

@@ -30,3 +30,6 @@ dist/
 
 # Windows
 Thumbs.db
+
+# Private conversation archives
+data/conversations/

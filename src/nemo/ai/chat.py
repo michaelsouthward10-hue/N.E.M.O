@@ -14,13 +14,24 @@ class NemoChat:
         self.ai = ai
         self.search = SearchEngine()
         self.prompt_builder = PromptBuilder()
-        self.memory = ConversationMemory()
+        self.memory = ConversationMemory.for_vault(vault_path)
         self.router = router or QuestionRouter()
         self.vault_path = Path(vault_path) if vault_path else None
     
-    def ask(self, question, mode="Ask"):
+    def set_vault(self, vault_path):
+        self.vault_path = Path(vault_path) if vault_path else None
+        self.memory = ConversationMemory.for_vault(vault_path)
 
+    def _conversation_context(self, question):
+        return "\n".join(f"{item['role']}: {item['message']}" for item in self.memory.recall(question))
+
+    def ask(self, question, mode="Ask"):
         self.memory.add("user", question)
+        result = self._ask(question, mode)
+        self.memory.add("assistant", result["answer"])
+        return result
+
+    def _ask(self, question, mode="Ask"):
 
         note_request = self._note_request(question)
         if note_request is not None:
@@ -34,7 +45,6 @@ class NemoChat:
                 "message",
                 "I couldn't find a connection between those notes in your vault.",
             )
-            self.memory.add("assistant", answer)
             return {"answer": answer, "sources": path or []}
 
         if mode in {"Summarize topic", "Develop idea"}:
@@ -51,7 +61,6 @@ class NemoChat:
                     "message",
                     "I couldn't find a connection between those notes in your vault."
                 )
-            self.memory.add("assistant", answer)
             return {"answer": answer, "sources": path or []}
 
         query = (
@@ -74,16 +83,10 @@ class NemoChat:
         # matching notes, the model can still answer without claiming vault sources.
         context = self.prompt_builder.build_context(results[:3])
 
-        prompt = self.prompt_builder.build_prompt(question, context, self.memory.recent())
+        prompt = self.prompt_builder.build_prompt(question, context, self.memory.recall(question))
 
         answer = self.ai.answer(prompt)
 
-        self.memory.add("assistant", answer)
-
-        print("\nConversation Memory")
-
-        for item in self.memory.recent():
-            print(item)
 
         return {
             "answer": answer,
@@ -97,7 +100,6 @@ class NemoChat:
         results = self.search.search_by_text(topic)[:3]
         if mode == "Summarize topic" and not results:
             answer = f"I couldn't find any notes about '{topic}' to summarize."
-            self.memory.add("assistant", answer)
             return {"answer": answer, "sources": []}
 
         context = self.prompt_builder.build_context(results)
@@ -117,10 +119,10 @@ class NemoChat:
 
         prompt = (
             f"You are N.E.M.O., an assistant for an Obsidian vault. {instructions}\n\n"
-            f"Topic or idea: {topic}\n\nRelevant vault notes:\n{context}"
+            f"Topic or idea: {topic}\n\nRelevant vault notes:\n{context}\n\n"
+            f"Previous discussion (not verified vault facts):\n{self._conversation_context(topic)}"
         )
         answer = self.ai.answer(prompt)
-        self.memory.add("assistant", answer)
         return {"answer": answer, "sources": [note["title"] for note in results]}
 
     @staticmethod
@@ -159,12 +161,12 @@ class NemoChat:
             "contain enough information, say so clearly and do not invent facts.\n"
             "Return only the note body in Markdown, without a title heading.\n\n"
             f"Requested note: {request}\n\n"
-            f"Relevant vault notes:\n{context}"
+            f"Relevant vault notes:\n{context}\n\n"
+            f"Previous discussion (not verified vault facts):\n{self._conversation_context(request)}"
         )
         body = self.ai.answer(prompt).strip()
         target.write_text(f"# {safe_name}\n\n{body}\n", encoding="utf-8")
         answer = f"Created the note '{safe_name}' in your Obsidian vault."
-        self.memory.add("assistant", answer)
         return {"answer": answer, "sources": [str(target)]}
 
     def save_note(self, title, body):
