@@ -8,7 +8,7 @@ The 1.0 release is a usable desktop application. The source remains available so
 
 1. Install [Ollama for Windows](https://ollama.com/download/windows), start it, and download the configured model. The default is `qwen3:8b`.
 2. Download `NEMO-Windows-Portable.zip` from the [GitHub Releases page](https://github.com/michaelsouthward10-hue/N.E.M.O/releases), extract it, and open `NEMO.exe`. The Windows app and its shortcuts use the N.E.M.O. icon.
-3. In N.E.M.O., choose your Obsidian vault and select **Reindex**. Reindex again after editing notes.
+3. In N.E.M.O., choose your Obsidian vault and select **Reindex**. Reindex again after editing notes. A progress bar shows the scanned note count, and **Reindex complete** appears when the index has been saved.
 4. Ask questions, use an Oracle mode to explore your notes, or choose **New note** to write and save your own note. To have N.E.M.O. draft one from your vault, ask in chat with `new note: <title>`.
 
 The installer does not require administrator access. The Ollama model is downloaded separately and is not bundled with N.E.M.O.

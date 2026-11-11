@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.8 — Saved conversations and reindex progress
+
+- Save a separate chat history for each vault and restore recent messages after restarting.
+- Recall relevant older discussions when answering, developing ideas, and drafting notes.
+- Browse the complete saved conversation with the Chat log button.
+- Show a dedicated reindex header, progress bar, and scanned/total note count.
+- Keep a clear completion message visible after indexing, including skipped files; show failures separately.
+
+
 ## 1.0.7 — Free constellation movement
 
 - Pan the constellation map in any direction by dragging with the left mouse button.

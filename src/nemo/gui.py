@@ -68,13 +68,15 @@ class NemoDesktopApp:
         style.configure("Muted.TLabel", background=BACKGROUND, foreground=MUTED, font=("Segoe UI", 9))
         style.configure("Kicker.TLabel", background=BACKGROUND, foreground=SEA_GLASS, font=("Segoe UI", 8, "bold"))
         style.configure("Title.TLabel", background=BACKGROUND, foreground=ACCENT, font=("Palatino Linotype", 23, "bold"))
+        style.configure("Reindex.TLabel", foreground=SEA_GLASS, font=("Segoe UI", 11, "bold"))
+        style.configure("Reindex.Horizontal.TProgressbar", background=SEA_GLASS, troughcolor=SURFACE)
         style.configure("TButton", font=("Segoe UI", 10), padding=(12, 8))
         style.configure("Accent.TButton", background=ACCENT, foreground="#1c211f", borderwidth=0)
         style.map("Accent.TButton", background=[("active", "#e5c77f"), ("disabled", "#756b50")])
 
     def _build_layout(self):
         self.root.grid_columnconfigure(0, weight=1)
-        self.root.grid_rowconfigure(2, weight=1)
+        self.root.grid_rowconfigure(3, weight=1)
 
         header = ttk.Frame(self.root, padding=(24, 18, 24, 12))
         header.grid(row=0, column=0, sticky="ew")
@@ -113,8 +115,18 @@ class NemoDesktopApp:
 
         ttk.Button(toolbar, text="Chat log", command=self._show_chat_log).pack(side="right", padx=(8, 0))
 
+        self.reindex_panel = ttk.Frame(self.root, padding=(24, 0, 24, 12))
+        self.reindex_panel.grid(row=2, column=0, sticky="ew")
+        self.reindex_heading = tk.StringVar(value="Reindexing vault")
+        self.reindex_detail = tk.StringVar(value="Finding Markdown notes…")
+        ttk.Label(self.reindex_panel, textvariable=self.reindex_heading, style="Reindex.TLabel").pack(anchor="w")
+        ttk.Label(self.reindex_panel, textvariable=self.reindex_detail, style="Muted.TLabel").pack(anchor="w", pady=(3, 6))
+        self.reindex_progress = ttk.Progressbar(self.reindex_panel, mode="indeterminate", style="Reindex.Horizontal.TProgressbar")
+        self.reindex_progress.pack(fill="x")
+        self.reindex_panel.grid_remove()
+
         body = ttk.Frame(self.root, style="Surface.TFrame", padding=1)
-        body.grid(row=2, column=0, sticky="nsew", padx=24)
+        body.grid(row=3, column=0, sticky="nsew", padx=24)
         self.transcript = tk.Text(
             body,
             wrap="word",
@@ -141,7 +153,7 @@ class NemoDesktopApp:
         self.source_link_number = 0
 
         composer = ttk.Frame(self.root, padding=(24, 12, 24, 18))
-        composer.grid(row=3, column=0, sticky="ew")
+        composer.grid(row=4, column=0, sticky="ew")
         composer_heading = ttk.Frame(composer)
         composer_heading.pack(fill="x", pady=(0, 6))
         ttk.Label(composer_heading, text="SPEAK TO N.E.M.O", style="Kicker.TLabel").pack(side="left")
@@ -300,7 +312,7 @@ class NemoDesktopApp:
                 if task_name in ("answer", "reindex"):
                     self._set_busy(False)
                 if task_name == "reindex_progress":
-                    self.status_var.set(result)
+                    self._update_reindex_progress(result)
                     continue
                 if task_name == "update_check":
                     self.update_checking = False
@@ -322,6 +334,8 @@ class NemoDesktopApp:
                         messagebox.showinfo("N.E.M.O is up to date", "You have the latest published version of N.E.M.O.", parent=self.root)
                     continue
                 if error:
+                    if task_name == "reindex":
+                        self._finish_reindex(error=error)
                     self.status_var.set("Needs attention")
                     self._append_message("N.E.M.O", str(error), "assistant")
                     continue
@@ -340,6 +354,7 @@ class NemoDesktopApp:
                 elif task_name == "reindex":
                     self.chat.search = SearchEngine()
                     self.chat.router = QuestionRouter()
+                    self._finish_reindex(result)
                     self.status_var.set("Ready · vault indexed")
                     self._append_message(
                         "N.E.M.O",
@@ -532,22 +547,53 @@ class NemoDesktopApp:
             return
         self.settings.setdefault("vault", {})["path"] = path
         save_settings(self.settings)
+        self.reindex_panel.grid_remove()
         self.chat.set_vault(path)
         self._restore_conversation()
         self.vault_var.set(self._vault_label())
         self.status_var.set("Vault selected · reindex to load its notes")
+
+    def _begin_reindex(self):
+        self.reindex_panel.grid()
+        self.reindex_heading.set("Reindexing vault")
+        self.reindex_detail.set("Finding Markdown notes…")
+        self.reindex_progress.stop()
+        self.reindex_progress.configure(mode="indeterminate", maximum=100, value=0)
+        self.reindex_progress.start(15)
+
+    def _update_reindex_progress(self, progress):
+        self.status_var.set(progress["message"])
+        self.reindex_detail.set(progress["message"])
+        if progress["phase"] != "discovering":
+            self.reindex_progress.stop()
+            self.reindex_progress.configure(mode="determinate", maximum=max(1, progress["total"]), value=progress["completed"])
+            self.reindex_heading.set("Saving index…" if progress["phase"] == "saving" else "Reindexing vault")
+
+    def _finish_reindex(self, result=None, error=None):
+        self.reindex_progress.stop()
+        if error is not None:
+            self.reindex_heading.set("Reindex failed")
+            self.reindex_detail.set(str(error))
+            return
+        self.reindex_progress.configure(mode="determinate", maximum=1, value=1)
+        self.reindex_heading.set("Reindex complete")
+        detail = f"Finished scanning {result['scanned']} Markdown notes · {result['markdown']} notes indexed."
+        if result.get("unreadable"):
+            detail += f" Skipped {result['unreadable']} inaccessible folder or file(s)."
+        self.reindex_detail.set(detail)
 
     def _reindex(self):
         vault = Path(self.settings.get("vault", {}).get("path", ""))
         if not vault.is_dir():
             messagebox.showinfo("Choose your vault", "Choose an existing Obsidian vault folder first.", parent=self.root)
             return
+        self._begin_reindex()
         scanner = VaultScanner(vault, self.ai)
         self._run_background(
             "reindex",
             lambda: scanner.scan(
-                progress_callback=lambda message: self.results.put(
-                    ("reindex_progress", message, None)
+                metrics_callback=lambda progress: self.results.put(
+                    ("reindex_progress", progress, None)
                 )
             ),
         )

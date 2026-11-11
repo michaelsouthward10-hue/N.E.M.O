@@ -39,10 +39,12 @@ class VaultScanner:
             return content[:500]
         return ""
 
-    def scan(self, progress_callback=None):
-        def report(message):
+    def scan(self, progress_callback=None, metrics_callback=None):
+        def report(message, phase="discovering", completed=0, total=0):
             if progress_callback:
                 progress_callback(message)
+            if metrics_callback:
+                metrics_callback({"message": message, "phase": phase, "completed": completed, "total": total})
 
         report("Finding Markdown notes…")
         folders = 0
@@ -73,7 +75,7 @@ class VaultScanner:
                 next_folder_update = folders + 100
 
         total = len(markdown_files)
-        report(f"Indexing 0 of {total} Markdown notes…")
+        report(f"Scanned 0 of {total} Markdown notes...", "indexing", 0, total)
         unreadable = len(walk_errors)
 
         for number, path in enumerate(markdown_files, start=1):
@@ -81,17 +83,18 @@ class VaultScanner:
                 note = MarkdownParser(path).parse()
             except OSError:
                 unreadable += 1
-                continue
-
-            note["path"] = path.relative_to(self.vault).as_posix()
-            note["summary"] = self._summary(note["text"])
-            self.indexer.add_note(note)
+            else:
+                note["path"] = path.relative_to(self.vault).as_posix()
+                note["summary"] = self._summary(note["text"])
+                self.indexer.add_note(note)
 
             if number % 10 == 0 or number == total:
-                report(f"Indexing {number} of {total} Markdown notes…")
+                report(f"Scanned {number} of {total} Markdown notes...", "indexing", number, total)
 
+        report("Saving the note index…", "saving", total, total)
         self.indexer.save(DATA_DIR / "index.json")
         return {
+            "scanned": total,
             "folders": folders,
             "markdown": len(self.indexer.index),
             "other": other,
