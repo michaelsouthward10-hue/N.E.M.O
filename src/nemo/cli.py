@@ -7,7 +7,7 @@ from nemo.services.router import QuestionRouter
 
 settings = load_settings()
 
-search = SearchEngine()
+search = SearchEngine(settings["vault"]["path"] or "")
 
 ai = OllamaClient(
     settings["ai"]["endpoint"],
@@ -46,8 +46,7 @@ while True:
         from nemo.core.system import SystemManager
 
         SystemManager().scan_vault()
-        chat.search = SearchEngine()
-        chat.router = QuestionRouter()
+        chat.refresh_index()
         console.print("Vault index refreshed.")
         continue
 

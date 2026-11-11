@@ -4,11 +4,11 @@ from nemo.search.search_engine import SearchEngine
 
 class GraphService:
 
-    def __init__(self):
+    def __init__(self, vault_path=None):
 
         self.graph = KnowledgeGraph()
 
-        self.graph.build(SearchEngine().index)
+        self.graph.build(SearchEngine(vault_path).index)
 
     def find_relationship(self, source, target):
 

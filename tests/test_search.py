@@ -1,12 +1,6 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
 from nemo.search.search_engine import SearchEngine
 
-engine = SearchEngine()
 
-results = engine.search_by_text("Michael")
-
-print(results)
+def test_search_finds_words_inside_natural_language_question(sample_index):
+    search = SearchEngine()
+    assert search.search_by_text("What do the notes say about Michael the archangel?")[0]["title"] == "Archangel Michael"

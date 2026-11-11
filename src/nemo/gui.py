@@ -2,12 +2,13 @@
 
 import os
 import queue
+import re
 import threading
 import tkinter as tk
 import webbrowser
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
-from urllib.parse import urlencode
+from tkinter import filedialog, messagebox, simpledialog, ttk
+from urllib.parse import urlencode, urlparse
 
 import requests
 
@@ -15,10 +16,12 @@ from nemo.ai.chat import NemoChat
 from nemo.ai.ollama_client import OllamaClient
 from nemo.constellation import ConstellationWindow
 from nemo.core.config import load_settings, save_settings
-from nemo.core.scanner import EXCLUDED_DIRECTORIES, VaultScanner
+from nemo.core.scanner import EXCLUDED_DIRECTORIES, VaultScanner, ScanCancelled
 from nemo.search.search_engine import SearchEngine
 from nemo.services.router import QuestionRouter
 from nemo.update_checker import check_for_update
+from nemo.gui_history import HistoryWindow, PinnedWindow
+from nemo.version import APP_VERSION
 
 
 BACKGROUND = "#101923"
@@ -36,15 +39,23 @@ class NemoDesktopApp:
         self.ai = OllamaClient(
             self.settings["ai"]["endpoint"],
             self.settings["ai"]["model"],
+            self.settings["ai"].get("context_tokens", 8192),
+            self.settings["ai"].get("embedding_model", ""),
         )
-        self.chat = NemoChat(self.ai, vault_path=self.settings["vault"].get("path", ""))
+        self.chat = NemoChat(self.ai, vault_path=self.settings["vault"].get("path", ""),
+                             recall_all=self.settings.get("memory", {}).get("recall_other_conversations", False))
         self.results = queue.Queue()
         self.busy = False
         self.update_checking = False
+        self.cancel_event = threading.Event()
+        self._request_number = 0
+        self._closed = False
+        self._auto_index_paused = False
+        self._streaming = False
 
-        self.root.title("N.E.M.O — Narrative Engine for Mythological Organisation")
-        self.root.geometry("920x640")
-        self.root.minsize(700, 500)
+        self.root.title(f"N.E.M.O {APP_VERSION} — Narrative Engine for Mythological Organisation")
+        self.root.geometry("1040x760")
+        self.root.minsize(860, 600)
         self.root.configure(bg=BACKGROUND)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
 
@@ -56,8 +67,10 @@ class NemoDesktopApp:
             "assistant",
         )
         self._restore_conversation()
+        self._refresh_conversations()
         self._check_ollama()
         self.root.after(120, self._poll_results)
+        self.root.after(1500, self._watch_vault)
 
     def _configure_style(self):
         style = ttk.Style(self.root)
@@ -101,26 +114,43 @@ class NemoDesktopApp:
         toolbar = ttk.Frame(self.root, padding=(24, 2, 24, 12))
         toolbar.grid(row=1, column=0, sticky="ew")
         self.vault_var = tk.StringVar(value=self._vault_label())
-        ttk.Label(toolbar, textvariable=self.vault_var, style="Muted.TLabel").pack(side="left", fill="x", expand=True)
-        self.vault_button = ttk.Button(toolbar, text="Choose vault", command=self._choose_vault)
+        vault_row = ttk.Frame(toolbar)
+        vault_row.pack(fill="x")
+        ttk.Label(vault_row, textvariable=self.vault_var, style="Muted.TLabel", wraplength=450).pack(side="left", fill="x", expand=True)
+        self.vault_button = ttk.Button(vault_row, text="Choose vault", command=self._choose_vault)
         self.vault_button.pack(side="right", padx=(8, 0))
-        self.reindex_button = ttk.Button(toolbar, text="Reindex", command=self._reindex)
+        self.reindex_button = ttk.Button(vault_row, text="Reindex", command=self._reindex)
         self.reindex_button.pack(side="right", padx=(8, 0))
-        self.note_button = ttk.Button(toolbar, text="New note", command=self._new_note)
+        self.note_button = ttk.Button(vault_row, text="New note", command=self._new_note)
         self.note_button.pack(side="right")
-        self.update_button = ttk.Button(toolbar, text="Check for updates", command=self._manual_update_check)
-        self.update_button.pack(side="right", padx=(8, 0))
-        self.map_button = ttk.Button(toolbar, text="Constellation", command=self._show_constellation)
-        self.map_button.pack(side="right", padx=(8, 0))
-
-        ttk.Button(toolbar, text="Chat log", command=self._show_chat_log).pack(side="right", padx=(8, 0))
+        chat_row = ttk.Frame(toolbar)
+        chat_row.pack(fill="x", pady=(8, 0))
+        self.conversation_var = tk.StringVar()
+        self.conversation_picker = ttk.Combobox(chat_row, textvariable=self.conversation_var, state="readonly", width=25)
+        self.conversation_picker.pack(side="left", fill="x", expand=True)
+        self.conversation_picker.bind("<<ComboboxSelected>>", self._select_conversation)
+        self.new_chat_button = ttk.Button(chat_row, text="New chat", command=self._new_conversation)
+        self.new_chat_button.pack(side="left", padx=(8, 0))
+        self.rename_chat_button = ttk.Button(chat_row, text="Rename", command=self._rename_conversation)
+        self.rename_chat_button.pack(side="left", padx=(8, 0))
+        self.history_button = ttk.Button(chat_row, text="Chat log", command=self._show_chat_log)
+        self.history_button.pack(side="left", padx=(8, 0))
+        self.pins_button = ttk.Button(chat_row, text="Pinned", command=lambda: PinnedWindow(self))
+        self.pins_button.pack(side="left", padx=(8, 0))
+        self.more_button = ttk.Menubutton(chat_row, text="More")
+        menu = tk.Menu(self.more_button, tearoff=False)
+        menu.add_command(label="Constellation", command=self._show_constellation)
+        menu.add_command(label="AI and indexing settings", command=self._settings_dialog)
+        menu.add_command(label="Check for updates", command=self._manual_update_check)
+        self.more_button.configure(menu=menu)
+        self.more_button.pack(side="right", padx=(8, 0))
 
         self.reindex_panel = ttk.Frame(self.root, padding=(24, 0, 24, 12))
         self.reindex_panel.grid(row=2, column=0, sticky="ew")
         self.reindex_heading = tk.StringVar(value="Reindexing vault")
         self.reindex_detail = tk.StringVar(value="Finding Markdown notes…")
         ttk.Label(self.reindex_panel, textvariable=self.reindex_heading, style="Reindex.TLabel").pack(anchor="w")
-        ttk.Label(self.reindex_panel, textvariable=self.reindex_detail, style="Muted.TLabel").pack(anchor="w", pady=(3, 6))
+        ttk.Label(self.reindex_panel, textvariable=self.reindex_detail, style="Muted.TLabel", wraplength=780).pack(anchor="w", pady=(3, 6))
         self.reindex_progress = ttk.Progressbar(self.reindex_panel, mode="indeterminate", style="Reindex.Horizontal.TProgressbar")
         self.reindex_progress.pack(fill="x")
         self.reindex_panel.grid_remove()
@@ -188,8 +218,40 @@ class NemoDesktopApp:
         self.prompt_entry.bind("<Return>", self._send_from_entry)
         self.send_button = ttk.Button(chat_bar, text="Send", style="Accent.TButton", command=self._send)
         self.send_button.pack(side="right")
+        self.stop_button = ttk.Button(chat_bar, text="Stop", command=self._stop, state="disabled")
+        self.stop_button.pack(side="right", padx=(0, 8))
         self.prompt_entry.bind("<FocusIn>", lambda _event: self.status_var.set("Type a question and press Enter to chat"))
         self.prompt_entry.focus_set()
+
+    def _refresh_conversations(self):
+        conversations = self.chat.memory.conversations()
+        self._conversation_ids = [item["id"] for item in conversations]
+        labels = [f"{item['title']} ({item['messages']})" for item in conversations]
+        self.conversation_picker.configure(values=labels)
+        if self.chat.memory.conversation_id in self._conversation_ids:
+            self.conversation_picker.current(self._conversation_ids.index(self.chat.memory.conversation_id))
+
+    def _select_conversation(self, event=None):
+        if not self.busy and self.conversation_picker.current() >= 0:
+            self.chat.memory.select_conversation(self._conversation_ids[self.conversation_picker.current()])
+            self._restore_conversation()
+
+    def _new_conversation(self):
+        if self.busy:
+            return
+        title = simpledialog.askstring("New conversation", "Conversation name:", parent=self.root)
+        if title:
+            self.chat.memory.new_conversation(title)
+            self._refresh_conversations()
+            self._restore_conversation()
+
+    def _rename_conversation(self):
+        if self.busy:
+            return
+        title = simpledialog.askstring("Rename conversation", "New name:", parent=self.root)
+        if title and title.strip():
+            self.chat.memory.rename_conversation(title)
+            self._refresh_conversations()
 
     def _vault_label(self):
         path = self.settings.get("vault", {}).get("path", "")
@@ -199,30 +261,93 @@ class NemoDesktopApp:
         self.transcript.configure(state="normal")
         name_tag = "user-name" if kind == "user" else "assistant-name"
         self.transcript.insert("end", f"{speaker}\n", name_tag)
+        body_start = self.transcript.index("end-1c")
         self.transcript.insert("end", f"{message}\n", "message")
         if sources:
             self.transcript.insert("end", "Sources · click a note to open it in Obsidian: ", "source")
             for number, source in enumerate(sources):
                 if number:
                     self.transcript.insert("end", ", ", "source")
-                source_text = str(source)
+                source_text = source["path"] if isinstance(source, dict) else str(source)
                 source_path = Path(source_text)
                 label = source_path.stem if source_path.suffix.casefold() == ".md" else source_text
+                if isinstance(source, dict):
+                    label = f"[{source['id']}] {source['title']} ({'cited' if source.get('cited') else 'retrieved'})"
                 tag = f"source-link-{self.source_link_number}"
                 self.source_link_number += 1
                 self.transcript.tag_configure(tag, foreground=ACCENT, underline=True)
                 self.transcript.tag_bind(
                     tag,
                     "<Button-1>",
-                    lambda _event, reference=source_text: self._open_source(reference),
+                    lambda _event, reference=source: self._show_evidence(reference) if isinstance(reference, dict) else self._open_source(str(reference)),
                 )
                 self.transcript.tag_bind(tag, "<Enter>", lambda _event: self.transcript.configure(cursor="hand2"))
                 self.transcript.tag_bind(tag, "<Leave>", lambda _event: self.transcript.configure(cursor=""))
                 self.transcript.insert("end", label, ("source", tag))
+                if isinstance(source, dict):
+                    for match in re.finditer(r"\[" + re.escape(source["id"]) + r"\]", message):
+                        self.transcript.tag_add(tag, f"{body_start}+{match.start()}c", f"{body_start}+{match.end()}c")
             self.transcript.insert("end", "\n", "source")
         self.transcript.insert("end", "\n")
         self.transcript.configure(state="disabled")
         self.transcript.see("end")
+
+    def _show_evidence(self, source):
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"[{source['id']}] {source['title']}")
+        dialog.geometry("780x520")
+        ttk.Label(dialog, text=f"{source['path']} - lines {source['start_line']}-{source['end_line']}", padding=12, wraplength=730).pack(anchor="w")
+        ttk.Label(dialog, text="Saved passage supplied with this answer. The current note may have changed.", padding=(12, 0)).pack(anchor="w")
+        frame = ttk.Frame(dialog, padding=12)
+        frame.pack(fill="both", expand=True)
+        text = tk.Text(frame, wrap="word", padx=12, pady=12)
+        scroll = ttk.Scrollbar(frame, orient="vertical", command=text.yview)
+        text.configure(yscrollcommand=scroll.set)
+        text.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        text.insert("end", source["text"])
+        text.configure(state="disabled")
+        same_vault = not source.get("vault") or source["vault"] == str(self.chat.vault_path.resolve()).casefold()
+        ttk.Button(dialog, text="Open current note in Obsidian", command=lambda: self._open_source(source["path"]),
+                   state="normal" if same_vault else "disabled").pack(anchor="e", padx=12, pady=(0, 12))
+
+    def _begin_stream(self):
+        self._streaming = True
+        self._stream_started = False
+        self.transcript.configure(state="normal")
+        self.transcript.mark_set("stream-anchor", "end-1c")
+        self.transcript.mark_gravity("stream-anchor", "left")
+        self.transcript.insert("end", "N.E.M.O\n", "assistant-name")
+        self.transcript.mark_set("stream-body", "end-1c")
+        self.transcript.mark_gravity("stream-body", "left")
+        self.transcript.insert("end", "Finding relevant notes and earlier discussions...\n\n", "source")
+        self.transcript.configure(state="disabled")
+        self.transcript.see("end")
+
+    def _stream_token(self, text):
+        if not self._streaming:
+            return
+        self.transcript.configure(state="normal")
+        if not self._stream_started:
+            self.transcript.delete("stream-body", "end-1c")
+            self._stream_started = True
+        self.transcript.insert("end", text, "message")
+        self.transcript.configure(state="disabled")
+        self.transcript.see("end")
+
+    def _finish_stream(self, answer, sources=None):
+        if self._streaming:
+            self.transcript.configure(state="normal")
+            self.transcript.delete("stream-anchor", "end-1c")
+            self.transcript.configure(state="disabled")
+        self._streaming = False
+        self._append_message("N.E.M.O", answer, "assistant", sources)
+
+    def _stop(self):
+        if self.busy:
+            self.cancel_event.set()
+            self.stop_button.configure(state="disabled")
+            self.status_var.set("Stopping...")
 
     def _open_source(self, source):
         path = self._resolve_source_path(source)
@@ -272,7 +397,11 @@ class NemoDesktopApp:
         except (OSError, ValueError):
             return None
 
+        if Path(str(source)).is_absolute() or "/" in str(source) or "\\" in str(source) or Path(str(source)).suffix.casefold() == ".md":
+            return None
+
         title = Path(str(source)).stem.casefold()
+        matches = []
         for current, directories, filenames in os.walk(vault):
             directories[:] = [
                 name for name in directories if name.casefold() not in EXCLUDED_DIRECTORIES
@@ -280,21 +409,29 @@ class NemoDesktopApp:
             for filename in filenames:
                 candidate = Path(current, filename)
                 if candidate.suffix.casefold() == ".md" and candidate.stem.casefold() == title:
-                    return candidate.resolve()
-        return None
+                    try:
+                        resolved = candidate.resolve()
+                        resolved.relative_to(vault)
+                        matches.append(resolved)
+                    except (OSError, ValueError):
+                        pass
+        return matches[0] if len(matches) == 1 else None
 
     def _set_busy(self, busy, status=None):
         self.busy = busy
         state = "disabled" if busy else "normal"
-        for button in (self.send_button, self.note_button, self.reindex_button, self.vault_button):
+        for button in (self.send_button, self.note_button, self.reindex_button, self.vault_button,
+                       self.new_chat_button, self.rename_chat_button, self.history_button, self.pins_button, self.more_button):
             button.configure(state=state)
-        if hasattr(self, "update_button"):
-            self.update_button.configure(state="disabled" if busy or self.update_checking else "normal")
+        self.conversation_picker.configure(state="disabled" if busy else "readonly")
+        self.stop_button.configure(state="normal" if busy else "disabled")
         if status:
             self.status_var.set(status)
 
     def _run_background(self, task_name, task):
-        status = "Reindexing vault…" if task_name == "reindex" else "Working…"
+        self.cancel_event = threading.Event()
+        self._active_task = task_name
+        status = {"reindex": "Reindexing vault...", "auto_index": "Updating changed notes...", "summarize": "Summarizing earlier discussion...", "export": "Exporting conversation..."}.get(task_name, "Working...")
         self._set_busy(True, status)
 
         def run():
@@ -306,24 +443,30 @@ class NemoDesktopApp:
         threading.Thread(target=run, daemon=True).start()
 
     def _poll_results(self):
+        if self._closed:
+            return
         try:
             while True:
                 task_name, result, error = self.results.get_nowait()
-                if task_name in ("answer", "reindex"):
+                if task_name == "answer_token":
+                    number, token = result
+                    if number == self._request_number:
+                        self._stream_token(token)
+                    continue
+                if task_name in ("answer", "reindex", "auto_index", "summarize", "export"):
                     self._set_busy(False)
                 if task_name == "reindex_progress":
                     self._update_reindex_progress(result)
                     continue
                 if task_name == "update_check":
                     self.update_checking = False
-                    self.update_button.configure(state="disabled" if self.busy else "normal")
                     if error:
                         if result == "manual":
                             messagebox.showinfo(
                                 "Update check", "Could not check for updates. Check your internet connection and try again.", parent=self.root
                             )
                         continue
-                    if result:
+                    if result and not result.get("no_update"):
                         if messagebox.askyesno(
                             "N.E.M.O update available",
                             f"N.E.M.O {result['latest_version']} is available (you have {result['current_version']}).\n\nOpen the release page to download it?",
@@ -334,10 +477,18 @@ class NemoDesktopApp:
                         messagebox.showinfo("N.E.M.O is up to date", "You have the latest published version of N.E.M.O.", parent=self.root)
                     continue
                 if error:
+                    if task_name == "export" and getattr(self, "_export_window", None) and self._export_window.window.winfo_exists():
+                        self._export_window.info.set(str(error))
                     if task_name == "reindex":
                         self._finish_reindex(error=error)
+                    elif task_name == "auto_index":
+                        self._auto_index_paused = True
+                    if task_name == "answer":
+                        self._finish_stream((getattr(error, "partial", "") + f"\n\nCouldn't complete the reply: {error}").strip())
+                        self._refresh_conversations()
+                    else:
+                        self._append_message("N.E.M.O", str(error), "assistant")
                     self.status_var.set("Needs attention")
-                    self._append_message("N.E.M.O", str(error), "assistant")
                     continue
                 if task_name == "connection":
                     if result == "model-ready":
@@ -349,11 +500,16 @@ class NemoDesktopApp:
                     else:
                         self.status_var.set("Ollama is offline · open Ollama and try again")
                 elif task_name == "answer":
-                    self._append_message("N.E.M.O", result["answer"], "assistant", result.get("sources"))
-                    self.status_var.set("Ready")
+                    sources = result.get("evidence") or result.get("sources")
+                    answer = result["answer"]
+                    if result.get("warnings"):
+                        answer += "\n\n" + "\n".join(result["warnings"])
+                    self._finish_stream(answer, sources)
+                    self._refresh_conversations()
+                    self.status_var.set("Stopped" if result.get("stopped") else "Ready")
                 elif task_name == "reindex":
-                    self.chat.search = SearchEngine()
-                    self.chat.router = QuestionRouter()
+                    self.chat.refresh_index()
+                    self._auto_index_paused = False
                     self._finish_reindex(result)
                     self.status_var.set("Ready · vault indexed")
                     self._append_message(
@@ -367,6 +523,18 @@ class NemoDesktopApp:
                         "assistant",
                     )
                     self._start_update_check(manual=False)
+                elif task_name == "auto_index":
+                    self.chat.refresh_index()
+                    updates = result.get("changed", 0) + result.get("removed", 0)
+                    self.status_var.set(f"Ready - {updates} note changes indexed" if updates else "Ready - notes up to date")
+                    if result.get("unreadable"):
+                        self.status_var.set(f"Notes updated; {result['unreadable']} inaccessible files or folders kept for retry")
+                elif task_name == "summarize":
+                    self.status_var.set("Earlier discussion summary updated" if result else "No older messages need summarizing yet")
+                elif task_name == "export":
+                    self.status_var.set("Conversation exported")
+                    if getattr(self, "_export_window", None) and self._export_window.window.winfo_exists():
+                        self._export_window.info.set("Conversation exported.")
         except queue.Empty:
             pass
         self.root.after(120, self._poll_results)
@@ -385,7 +553,12 @@ class NemoDesktopApp:
         mode = self.oracle_mode_var.get()
         display_question = question if mode == "Ask" else f"{mode} · {question}"
         self._append_message("You", display_question, "user")
-        self._run_background("answer", lambda: self.chat.ask(question, mode=mode))
+        self._request_number += 1
+        number = self._request_number
+        self._begin_stream()
+        self._run_background("answer", lambda: self.chat.ask(
+            question, mode=mode, cancel_event=self.cancel_event,
+            on_token=lambda token: self.results.put(("answer_token", (number, token), None))))
 
     def _update_oracle_hint(self, _event=None):
         hints = {
@@ -519,22 +692,14 @@ class NemoDesktopApp:
         self.transcript.configure(state="disabled")
         for item in self.chat.memory.recent(40):
             role = item["role"]
-            self._append_message("You" if role == "user" else "N.E.M.O", item["message"], role)
-        self._append_message("N.E.M.O", "Chat history is saved for this vault. I can recall relevant earlier discussions. Use Chat log to browse the full history.", "assistant")
+            self._append_message("You" if role == "user" else "N.E.M.O", item["message"], role, item.get("sources"))
+        self._append_message("N.E.M.O", "This conversation is saved for the selected vault. Use Chat log to search or export it, and Pinned to keep facts or decisions in context.", "assistant")
+        if getattr(self.chat.search, "warning", ""):
+            self._append_message("N.E.M.O", self.chat.search.warning, "assistant")
 
     def _show_chat_log(self):
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Saved chat log")
-        dialog.geometry("800x600")
-        text = tk.Text(dialog, wrap="word", padx=16, pady=16)
-        scroll = ttk.Scrollbar(dialog, orient="vertical", command=text.yview)
-        text.configure(yscrollcommand=scroll.set)
-        scroll.pack(side="right", fill="y")
-        text.pack(fill="both", expand=True)
-        for item in self.chat.memory.history:
-            text.insert("end", f"{item['role'].capitalize()}: {item['message']}\n\n")
-        text.configure(state="disabled")
-        text.see("end")
+        if not self.busy:
+            HistoryWindow(self)
 
     def _choose_vault(self):
         current = self.settings.get("vault", {}).get("path", "")
@@ -549,6 +714,8 @@ class NemoDesktopApp:
         save_settings(self.settings)
         self.reindex_panel.grid_remove()
         self.chat.set_vault(path)
+        self._auto_index_paused = False
+        self._refresh_conversations()
         self._restore_conversation()
         self.vault_var.set(self._vault_label())
         self.status_var.set("Vault selected · reindex to load its notes")
@@ -572,7 +739,7 @@ class NemoDesktopApp:
     def _finish_reindex(self, result=None, error=None):
         self.reindex_progress.stop()
         if error is not None:
-            self.reindex_heading.set("Reindex failed")
+            self.reindex_heading.set("Reindex stopped" if isinstance(error, ScanCancelled) else "Reindex failed")
             self.reindex_detail.set(str(error))
             return
         self.reindex_progress.configure(mode="determinate", maximum=1, value=1)
@@ -592,6 +759,7 @@ class NemoDesktopApp:
         self._run_background(
             "reindex",
             lambda: scanner.scan(
+                cancel_event=self.cancel_event,
                 metrics_callback=lambda progress: self.results.put(
                     ("reindex_progress", progress, None)
                 )
@@ -605,7 +773,6 @@ class NemoDesktopApp:
         if self.update_checking:
             return
         self.update_checking = True
-        self.update_button.configure(state="disabled")
 
         def run():
             try:
@@ -635,7 +802,80 @@ class NemoDesktopApp:
         threading.Thread(target=run, daemon=True).start()
 
     def close(self):
+        self._closed = True
+        self.cancel_event.set()
         self.root.destroy()
+
+    def _watch_vault(self):
+        if self._closed:
+            return
+        indexing = self.settings.get("indexing", {})
+        if indexing.get("automatic", True) and not self.busy and not self._auto_index_paused:
+            vault = self.settings.get("vault", {}).get("path", "")
+            if vault and Path(vault).is_dir():
+                scanner = VaultScanner(vault)
+                self._run_background("auto_index", lambda: scanner.scan(incremental=True, cancel_event=self.cancel_event))
+        try:
+            interval = max(5, int(indexing.get("interval_seconds", 10)))
+        except (TypeError, ValueError):
+            interval = 10
+        self.root.after(interval * 1000, self._watch_vault)
+
+    def _settings_dialog(self):
+        if self.busy:
+            return
+        dialog = tk.Toplevel(self.root)
+        dialog.title("AI and indexing settings")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        dialog.geometry("650x560")
+        frame = ttk.Frame(dialog, padding=20)
+        frame.pack(fill="both", expand=True)
+        frame.columnconfigure(1, weight=1)
+        values = {}
+        ai = self.settings["ai"]
+        for row, (name, label, initial) in enumerate((
+            ("endpoint", "Ollama endpoint", ai["endpoint"]),
+            ("model", "Conversation model", ai["model"]),
+            ("context_tokens", "Context size", str(ai.get("context_tokens", 8192))),
+            ("embedding_model", "Embedding model (optional)", ai.get("embedding_model", "")),
+        )):
+            ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", padx=(0, 12), pady=8)
+            values[name] = tk.StringVar(value=initial)
+            ttk.Entry(frame, textvariable=values[name]).grid(row=row, column=1, sticky="ew", pady=8)
+        ttk.Label(frame, text="Question expansion uses the conversation model. Optional embedding search needs an embedding model already downloaded in Ollama. Its first search builds a local cache and can take longer. Leave blank to use word ranking and model-generated search terms.", wraplength=590).grid(row=4, column=0, columnspan=2, sticky="w", pady=12)
+        automatic = tk.BooleanVar(value=self.settings.get("indexing", {}).get("automatic", True))
+        ttk.Checkbutton(frame, text="Automatically index added, changed and deleted notes", variable=automatic).grid(row=5, column=0, columnspan=2, sticky="w", pady=8)
+        other_chats = tk.BooleanVar(value=self.settings.get("memory", {}).get("recall_other_conversations", False))
+        ttk.Checkbutton(frame, text="Allow recall from other conversations in this vault", variable=other_chats).grid(row=6, column=0, columnspan=2, sticky="w", pady=8)
+        ttk.Label(frame, text="Context size: 2,048 to 32,768 tokens. Larger values use more memory. Nothing is downloaded automatically.", wraplength=590).grid(row=7, column=0, columnspan=2, sticky="w", pady=8)
+
+        def save():
+            try:
+                endpoint = values["endpoint"].get().strip().rstrip("/")
+                if urlparse(endpoint).scheme not in {"http", "https"} or not urlparse(endpoint).netloc:
+                    raise ValueError("Enter a valid HTTP or HTTPS Ollama endpoint.")
+                model = values["model"].get().strip()
+                if not model:
+                    raise ValueError("Choose a conversation model.")
+                context = int(values["context_tokens"].get())
+                if not 2048 <= context <= 32768:
+                    raise ValueError("Context size must be between 2,048 and 32,768 tokens.")
+                self.settings["ai"].update(endpoint=endpoint, model=model, context_tokens=context,
+                                           embedding_model=values["embedding_model"].get().strip())
+                self.settings.setdefault("indexing", {})["automatic"] = automatic.get()
+                self.settings.setdefault("memory", {})["recall_other_conversations"] = other_chats.get()
+                save_settings(self.settings)
+                self.ai = OllamaClient(endpoint, model, context, self.settings["ai"]["embedding_model"])
+                self.chat.ai = self.ai
+                self.chat.recall_all = other_chats.get()
+                self.chat.semantic = self.chat._make_semantic(self.chat.vault_path)
+                self._auto_index_paused = False
+                self._check_ollama()
+                dialog.destroy()
+            except (ValueError, OSError) as error:
+                messagebox.showinfo("Couldn't save settings", str(error), parent=dialog)
+        ttk.Button(frame, text="Save settings", command=save, style="Accent.TButton").grid(row=8, column=1, sticky="e", pady=12)
 
 
 def main():

@@ -1,3 +1,7 @@
+from collections import deque
+from nemo.indexing.links import LinkResolver
+
+
 class KnowledgeGraph:
 
     def __init__(self):
@@ -33,11 +37,11 @@ class KnowledgeGraph:
         
         visited = set()
 
-        queue = [[start]]
+        queue = deque([[start]])
 
         while queue:
 
-            path = queue.pop(0)
+            path = queue.popleft()
             node = path[-1]
 
             if node in visited:
@@ -59,16 +63,14 @@ class KnowledgeGraph:
     def build(self, index):
 
         self.graph.clear()
-
-        for note in index.values():
-
-            source = note["title"]
-
-            self.add_note(source)
-
+        resolver = LinkResolver(index)
+        for key in index:
+            self.add_note(key)
+        for key, note in index.items():
             for link in note.get("links", []):
-
-                self.add_edge(source, link)
+                target = resolver.resolve(link, note.get("path", key))
+                if target is not None and target != key:
+                    self.add_edge(key, target)
 
     def connected_from(self, node):
 
@@ -76,7 +78,7 @@ class KnowledgeGraph:
 
         for source, targets in self.graph.items():
 
-            if node in targets:
+            if node in targets["connections"]:
                 connected.append(source)
 
         return connected

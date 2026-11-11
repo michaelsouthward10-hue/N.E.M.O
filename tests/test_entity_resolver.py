@@ -1,7 +1,7 @@
 from nemo.parsers.entity_resolver import EntityResolver
 
 
-def test_resolve_existing_entity():
+def test_resolve_existing_entity(sample_index):
 
     resolver = EntityResolver()
 

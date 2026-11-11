@@ -1,7 +1,7 @@
 from nemo.services.relationship_service import RelationshipService
 
 
-def test_relationship_service():
+def test_relationship_service(sample_index):
 
     service = RelationshipService()
 

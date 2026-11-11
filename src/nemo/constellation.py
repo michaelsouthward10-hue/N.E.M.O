@@ -5,6 +5,7 @@ import random
 import time
 import tkinter as tk
 from tkinter import ttk
+from nemo.indexing.links import LinkResolver, display_names
 
 
 BACKGROUND = "#101923"
@@ -135,31 +136,21 @@ class ConstellationWindow:
         return max(self.note_titles, key=lambda title: len(self.neighbors.get(title, ())))
 
     def _build_edges(self):
-        path_by_title = {
-            note.get("title", key).casefold(): note.get("path", "").replace("\\", "/").casefold()
-            for key, note in self.index.items()
-        }
+        labels = display_names(self.index)
+        self.note_titles = sorted(labels.values(), key=str.casefold)
+        self.title_lookup = {label.casefold(): label for label in self.note_titles}
+        self.source_by_label = {labels[key]: note.get("path", key) for key, note in self.index.items()}
+        resolver = LinkResolver(self.index)
         edges = set()
         neighbors = {title: set() for title in self.note_titles}
 
         for key, note in self.index.items():
-            source = note.get("title", key)
+            source = labels[key]
             if source not in neighbors:
                 continue
             for raw_link in note.get("links", []):
-                target = raw_link.split("|", 1)[0].split("#", 1)[0].strip().replace("\\", "/")
-                target_key = target.casefold().removesuffix(".md")
-                target_title = self.title_lookup.get(target_key)
-                if target_title is None:
-                    target_title = self.title_lookup.get(target.rsplit("/", 1)[-1].casefold().removesuffix(".md"))
-                if target_title is None:
-                    normalized_path = target_key
-                    target_title = next(
-                        (title for title, indexed_path in path_by_title.items() if indexed_path.casefold().removesuffix(".md") == normalized_path),
-                        None,
-                    )
-                    if target_title is not None:
-                        target_title = self.title_lookup.get(target_title)
+                target_key = resolver.resolve(raw_link, note.get("path", key))
+                target_title = labels.get(target_key)
                 if target_title is None or target_title == source:
                     continue
                 edges.add((source, target_title))
@@ -175,7 +166,7 @@ class ConstellationWindow:
     def _open_center(self):
         title = self._selected_title()
         if title:
-            self.open_note(title)
+            self.open_note(self.source_by_label.get(title, title))
 
     def _selected_title(self):
         typed = self.center_var.get().strip()

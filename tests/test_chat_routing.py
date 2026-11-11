@@ -68,7 +68,8 @@ def test_note_request_writes_markdown_in_vault_without_overwriting(tmp_path):
 
     note = tmp_path / "Michael's abilities.md"
     assert result["answer"] == "Created the note 'Michael's abilities' in your Obsidian vault."
-    assert note.read_text(encoding="utf-8") == "# Michael's abilities\n\nAn answer grounded in the vault.\n"
+    assert note.read_text(encoding="utf-8").startswith("# Michael's abilities\n\nAn answer grounded in the vault.\n")
+    assert "[S1] [[Michael]]" in note.read_text(encoding="utf-8")
     assert len(ai.prompts) == 1
 
     repeated = chat.ask("new note: Michael's abilities")

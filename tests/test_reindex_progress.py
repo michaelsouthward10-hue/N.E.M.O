@@ -1,8 +1,10 @@
 from nemo.core import scanner as scanner_module
 from nemo.core.scanner import VaultScanner
 from nemo.gui import NemoDesktopApp
+from nemo.core.storage import index_path
 from types import SimpleNamespace
 import tkinter as tk
+from conftest import clear_tk
 
 
 def test_progress_reports_total_and_counts_inaccessible_notes(tmp_path, monkeypatch):
@@ -30,7 +32,7 @@ def test_progress_reports_total_and_counts_inaccessible_notes(tmp_path, monkeypa
     assert indexing[0]["completed"] == 0
     assert indexing[-1]["completed"] == indexing[-1]["total"] == 2
     assert events[-1]["phase"] == "saving"
-    assert (tmp_path / "data" / "index.json").is_file()
+    assert index_path(vault, tmp_path / "data").is_file()
 
 
 def test_empty_vault_finishes_with_zero_notes(tmp_path, monkeypatch):
@@ -52,13 +54,11 @@ def test_saving_failure_propagates_instead_of_reporting_success(tmp_path, monkey
         VaultScanner(tmp_path).scan()
 
 
-def test_desktop_progress_lifecycle(monkeypatch, tmp_path):
+def test_desktop_progress_lifecycle(monkeypatch, tmp_path, tk_root):
     from nemo import gui
     monkeypatch.setattr(gui, "load_settings", lambda: {"vault": {"path": str(tmp_path)}, "ai": {"endpoint": "http://localhost:11434", "model": "test"}})
-    monkeypatch.setattr(gui.NemoChat, "__init__", lambda self, *args, **kwargs: setattr(self, "memory", SimpleNamespace(recent=lambda limit: [])))
     monkeypatch.setattr(gui.NemoDesktopApp, "_check_ollama", lambda self: None)
-    root = tk.Tk()
-    root.withdraw()
+    root = tk_root
     try:
         app = NemoDesktopApp(root)
         app._begin_reindex()
@@ -81,4 +81,6 @@ def test_desktop_progress_lifecycle(monkeypatch, tmp_path):
         app._finish_reindex({"scanned": 0, "markdown": 0})
         assert "0 Markdown notes" in app.reindex_detail.get()
     finally:
-        root.destroy()
+        app._closed = True
+        app.cancel_event.set()
+        clear_tk(root)

@@ -7,7 +7,9 @@ from nemo.core.paths import CONFIG_DIR, CONFIG_PATH, DEFAULT_CONFIG_PATH
 DEFAULT_SETTINGS = {
     "project": {"name": "NEMO", "version": "1.0.0"},
     "vault": {"path": ""},
-    "ai": {"provider": "ollama", "endpoint": "http://localhost:11434", "model": "qwen3:8b"},
+    "ai": {"provider": "ollama", "endpoint": "http://localhost:11434", "model": "qwen3:8b", "context_tokens": 8192, "embedding_model": ""},
+    "indexing": {"automatic": True, "interval_seconds": 10},
+    "memory": {"recall_other_conversations": False},
     "display": {"theme": "cyan"},
 }
 

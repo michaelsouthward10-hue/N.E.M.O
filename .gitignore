@@ -33,3 +33,5 @@ Thumbs.db
 
 # Private conversation archives
 data/conversations/
+data/vaults/
+data/semantic/

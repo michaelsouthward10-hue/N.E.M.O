@@ -9,6 +9,15 @@ ai:
   provider: ollama
   endpoint: "http://localhost:11434"
   model: "qwen3:8b"
+  context_tokens: 8192
+  embedding_model: ""
+
+indexing:
+  automatic: true
+  interval_seconds: 10
+
+memory:
+  recall_other_conversations: false
 
 display:
   theme: cyan

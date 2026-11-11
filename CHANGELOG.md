@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.0 — Deeper vault conversations
+
+- Rank passages across notes using natural-language words, aliases, tags and model-generated search terms.
+- Resolve follow-up questions from the current conversation and ask when references are ambiguous.
+- Gather supporting passages across more notes and follow relevant outgoing links and backlinks.
+- Add optional local embedding search for notes and older discussion, with visible fallback when its model is unavailable.
+- Add named conversations, searchable paged history, Markdown/JSON export and conversation deletion.
+- Preserve 1.0.8 chat logs through an automatic database migration; keep chats, summaries and pins separate.
+- Summarize older discussion while retaining the full log, and let users pin facts, decisions or ideas.
+- Cite numbered passages with note paths and line ranges; open saved excerpts and mark unavailable or missing citations.
+- Stream replies, add a responsive Stop control, and mark stopped or failed replies as incomplete in saved history.
+- Detect added, edited, renamed and deleted notes automatically, reusing unchanged entries.
+- Use separate indexes for each vault, keep same-named notes distinct and save indexes atomically.
+- Preserve previous readable entries when files or folders cannot be accessed, and keep the previous index on cancellation or save failure.
+- Add AI/indexing settings, clearer model error recovery, and fix the manual up-to-date notification.
+- Replace tests that depended on private vault data or a live model with isolated, repeatable checks.
+
 ## 1.0.8 — Saved conversations and reindex progress
 
 - Save a separate chat history for each vault and restore recent messages after restarting.

@@ -1,25 +1,17 @@
-import json
 from pathlib import Path
+
+from nemo.core.storage import atomic_json_write, vault_identity
 
 
 class VaultIndexer:
-
     def __init__(self, vault):
-        self.vault = vault
+        self.vault = Path(vault)
         self.index = {}
 
     def add_note(self, note):
-        """Add a parsed note to the index."""
-        self.index[note["title"]] = note
+        self.index[note.get("path", note["title"])] = note
 
     def save(self, destination):
-        destination = Path(destination)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(destination, "w", encoding="utf-8") as f:
-            json.dump(
-                self.index,
-                f,
-                indent=4,
-                ensure_ascii=False
-            )
+        atomic_json_write(destination, {
+            "schema": 2, "vault": vault_identity(self.vault), "notes": self.index,
+        })

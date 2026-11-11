@@ -5,6 +5,7 @@ from urllib.parse import parse_qs, urlparse
 from nemo import gui
 from nemo.core import scanner as scanner_module
 from nemo.core.scanner import VaultScanner
+from nemo.core.storage import index_path
 
 
 def make_app(vault, indexed_notes):
@@ -25,8 +26,8 @@ def test_reindex_stores_vault_relative_note_paths(tmp_path, monkeypatch):
 
     VaultScanner(vault).scan()
 
-    index = json.loads((tmp_path / "local-data" / "index.json").read_text(encoding="utf-8"))
-    assert index["Michael"]["path"] == "Characters/Michael.md"
+    index = json.loads(index_path(vault, tmp_path / "local-data").read_text(encoding="utf-8"))
+    assert index["notes"]["Characters/Michael.md"]["path"] == "Characters/Michael.md"
 
 
 def test_source_resolves_to_the_indexed_markdown_file(tmp_path):

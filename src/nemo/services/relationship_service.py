@@ -23,8 +23,8 @@ class RelationshipService:
         if not target_note:
             return None
 
-        source_name = source_note["title"]
-        target_name = target_note["title"]
+        source_name = source_note.get("path", source_note["title"])
+        target_name = target_note.get("path", target_note["title"])
 
         return self.graph.find_path(
             source_name,

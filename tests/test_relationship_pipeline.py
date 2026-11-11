@@ -1,7 +1,7 @@
 from nemo.services.router import QuestionRouter
 
 
-def test_full_relationship_pipeline():
+def test_full_relationship_pipeline(sample_index):
 
     router = QuestionRouter()
 

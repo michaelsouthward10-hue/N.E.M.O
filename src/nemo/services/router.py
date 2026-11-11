@@ -1,5 +1,6 @@
 from nemo.parsers.question_parser import QuestionParser
 from nemo.services.relationship_service import RelationshipService
+import re
 
 
 class QuestionRouter:
@@ -15,7 +16,8 @@ class QuestionRouter:
 
         parsed = self.parser.parse(question)
 
-        if parsed.intent == "relationship":
+        wants_explanation = re.search(r"\b(why|explain|describe|compare|difference|differences|contrast|story)\b", question, re.IGNORECASE)
+        if parsed.intent == "relationship" and len(parsed.entities) >= 2 and not wants_explanation:
             return "relationship"
 
         return "general"

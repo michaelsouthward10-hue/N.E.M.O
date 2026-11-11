@@ -56,7 +56,9 @@ def test_summarize_topic_uses_matching_notes_as_context():
 
     result = chat.ask("Athena", mode="Summarize topic")
 
-    assert result == {"answer": "Oracle response.", "sources": ["Athena"]}
+    assert result["answer"] == "Oracle response."
+    assert result["sources"] == ["Athena"]
+    assert result["evidence"][0]["text"] == "Athena is a goddess."
     assert chat.search.queries == ["Athena"]
     assert "using only the supplied Obsidian notes" in ai.prompts[0]
     assert "Athena is a goddess." in ai.prompts[0]
@@ -67,7 +69,8 @@ def test_develop_idea_allows_an_idea_without_matching_notes():
 
     result = chat.ask("A city built on the back of a whale", mode="Develop idea")
 
-    assert result == {"answer": "Oracle response.", "sources": []}
+    assert result["answer"] == "Oracle response."
+    assert result["sources"] == []
     assert "without claiming vault support" in ai.prompts[0]
 
 
