@@ -1,6 +1,8 @@
 """Windows desktop interface for NEMO."""
 
 import os
+import json
+import sqlite3
 import queue
 import re
 import threading
@@ -20,6 +22,8 @@ from nemo.core.scanner import EXCLUDED_DIRECTORIES, VaultScanner, ScanCancelled
 from nemo.search.search_engine import SearchEngine
 from nemo.services.router import QuestionRouter
 from nemo.update_checker import check_for_update
+from nemo.gui_manuscript import ManuscriptWindow
+from nemo.markup import render
 from nemo.gui_history import HistoryWindow, PinnedWindow
 from nemo.version import APP_VERSION
 
@@ -119,6 +123,8 @@ class NemoDesktopApp:
         ttk.Label(vault_row, textvariable=self.vault_var, style="Muted.TLabel", wraplength=450).pack(side="left", fill="x", expand=True)
         self.vault_button = ttk.Button(vault_row, text="Choose vault", command=self._choose_vault)
         self.vault_button.pack(side="right", padx=(8, 0))
+        self.manuscript_button = ttk.Button(vault_row, text="Manuscript", command=self._manuscript)
+        self.manuscript_button.pack(side="right", padx=4)
         self.reindex_button = ttk.Button(vault_row, text="Reindex", command=self._reindex)
         self.reindex_button.pack(side="right", padx=(8, 0))
         self.note_button = ttk.Button(vault_row, text="New note", command=self._new_note)
@@ -139,6 +145,9 @@ class NemoDesktopApp:
         self.pins_button.pack(side="left", padx=(8, 0))
         self.more_button = ttk.Menubutton(chat_row, text="More")
         menu = tk.Menu(self.more_button, tearoff=False)
+        recent = tk.Menu(menu, tearoff=False, postcommand=lambda: self._refresh_recent(recent))
+        menu.add_cascade(label="Recent and Obsidian vaults", menu=recent)
+        menu.add_command(label="Open Ollama", command=self._open_ollama)
         menu.add_command(label="Constellation", command=self._show_constellation)
         menu.add_command(label="AI and indexing settings", command=self._settings_dialog)
         menu.add_command(label="Check for updates", command=self._manual_update_check)
@@ -262,7 +271,11 @@ class NemoDesktopApp:
         name_tag = "user-name" if kind == "user" else "assistant-name"
         self.transcript.insert("end", f"{speaker}\n", name_tag)
         body_start = self.transcript.index("end-1c")
-        self.transcript.insert("end", f"{message}\n", "message")
+        if kind == "assistant":
+            message = render(self.transcript, message)
+            self.transcript.insert("end", "\n", "message")
+        else:
+            self.transcript.insert("end", f"{message}\n", "message")
         if sources:
             self.transcript.insert("end", "Sources · click a note to open it in Obsidian: ", "source")
             for number, source in enumerate(sources):
@@ -420,7 +433,7 @@ class NemoDesktopApp:
     def _set_busy(self, busy, status=None):
         self.busy = busy
         state = "disabled" if busy else "normal"
-        for button in (self.send_button, self.note_button, self.reindex_button, self.vault_button,
+        for button in (self.send_button, self.manuscript_button, self.note_button, self.reindex_button, self.vault_button,
                        self.new_chat_button, self.rename_chat_button, self.history_button, self.pins_button, self.more_button):
             button.configure(state=state)
         self.conversation_picker.configure(state="disabled" if busy else "readonly")
@@ -491,6 +504,9 @@ class NemoDesktopApp:
                     self.status_var.set("Needs attention")
                     continue
                 if task_name == "connection":
+                    self.ollama_button.pack_forget()
+                    if result == "offline" and urlparse(self.settings["ai"]["endpoint"]).hostname in ("localhost", "127.0.0.1", "::1"):
+                        self.ollama_button.pack(side="right")
                     if result == "model-ready":
                         self.status_var.set("Ready · Ollama and model connected")
                     elif result == "model-missing":
@@ -701,6 +717,37 @@ class NemoDesktopApp:
         if not self.busy:
             HistoryWindow(self)
 
+    def _manuscript(self):
+        if self.chat.vault_path is None or not self.chat.vault_path.is_dir():
+            self._choose_vault()
+        if self.chat.vault_path and self.chat.vault_path.is_dir():
+            try:
+                ManuscriptWindow(self)
+            except (OSError, ValueError, sqlite3.Error) as error:
+                messagebox.showerror("Couldn't open manuscript", str(error), parent=self.root)
+
+    def _refresh_recent(self, menu):
+        menu.delete(0, "end")
+        vault = self.settings.get("vault", {})
+        paths = [vault.get("path"), *vault.get("recent", [])]
+        try:
+            registered = Path(os.environ["APPDATA"]) / "obsidian" / "obsidian.json"
+            entries = json.loads(registered.read_text(encoding="utf-8"))["vaults"]
+            paths.extend(item.get("path") for item in entries.values())
+        except (KeyError, ValueError, OSError, AttributeError):
+            pass
+        for path in dict.fromkeys(p for p in paths if p and Path(p).is_dir()):
+            menu.add_command(label=f"{Path(path).name}  ({path})", command=lambda p=path: self._activate_vault(p))
+        menu.add_command(label="Browse folders...", command=self._choose_vault)
+
+    def _open_ollama(self):
+        executable = Path(os.getenv("LOCALAPPDATA", "")) / "Programs" / "Ollama" / "ollama app.exe"
+        try:
+            os.startfile(str(executable))
+            self.root.after(3000, self._check_ollama)
+        except (OSError, AttributeError):
+            messagebox.showinfo("Open Ollama", "Open Ollama from the Start menu, or run ollama serve in PowerShell.", parent=self.root)
+
     def _choose_vault(self):
         current = self.settings.get("vault", {}).get("path", "")
         path = filedialog.askdirectory(
@@ -710,7 +757,14 @@ class NemoDesktopApp:
         )
         if not path:
             return
-        self.settings.setdefault("vault", {})["path"] = path
+        self._activate_vault(path)
+
+    def _activate_vault(self, path):
+        if self.busy or not Path(path).is_dir():
+            return
+        vault = self.settings.setdefault("vault", {})
+        vault["recent"] = list(dict.fromkeys(p for p in [str(path), vault.get("path"), *vault.get("recent", [])] if p))[:10]
+        vault["path"] = str(path)
         save_settings(self.settings)
         self.reindex_panel.grid_remove()
         self.chat.set_vault(path)
@@ -837,7 +891,7 @@ class NemoDesktopApp:
         for row, (name, label, initial) in enumerate((
             ("endpoint", "Ollama endpoint", ai["endpoint"]),
             ("model", "Conversation model", ai["model"]),
-            ("context_tokens", "Context size", str(ai.get("context_tokens", 8192))),
+            ("context_tokens", "Text per reply (tokens)", str(ai.get("context_tokens", 8192))),
             ("embedding_model", "Embedding model (optional)", ai.get("embedding_model", "")),
         )):
             ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", padx=(0, 12), pady=8)
@@ -848,7 +902,7 @@ class NemoDesktopApp:
         ttk.Checkbutton(frame, text="Automatically index added, changed and deleted notes", variable=automatic).grid(row=5, column=0, columnspan=2, sticky="w", pady=8)
         other_chats = tk.BooleanVar(value=self.settings.get("memory", {}).get("recall_other_conversations", False))
         ttk.Checkbutton(frame, text="Allow recall from other conversations in this vault", variable=other_chats).grid(row=6, column=0, columnspan=2, sticky="w", pady=8)
-        ttk.Label(frame, text="Context size: 2,048 to 32,768 tokens. Larger values use more memory. Nothing is downloaded automatically.", wraplength=590).grid(row=7, column=0, columnspan=2, sticky="w", pady=8)
+        ttk.Label(frame, text="This is how much text the model can handle per reply. Choose 2,048 to 32,768 tokens. Larger values use more memory. Local Ollama has no per-token charge.", wraplength=590).grid(row=7, column=0, columnspan=2, sticky="w", pady=8)
 
         def save():
             try:

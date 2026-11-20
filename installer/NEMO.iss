@@ -19,7 +19,7 @@ WizardStyle=modern
 UninstallDisplayIcon={app}\NEMO.exe
 
 [Files]
-Source: "..\dist\NEMO\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\.nemo-release\NEMO\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\N.E.M.O"; Filename: "{app}\NEMO.exe"

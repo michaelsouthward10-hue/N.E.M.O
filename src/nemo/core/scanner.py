@@ -6,7 +6,7 @@ from nemo.core.storage import index_path, load_vault_index
 from nemo.indexing.indexer import VaultIndexer
 from nemo.indexing.parser import MarkdownParser
 
-EXCLUDED_DIRECTORIES = {".git", ".hg", ".obsidian", ".svn", ".trash", ".venv",
+EXCLUDED_DIRECTORIES = {".git", ".hg", ".nemo", ".obsidian", ".svn", ".trash", ".venv",
                         "__pycache__", "build", "dist", "env", "node_modules", "venv", ".nemo-build", ".nemo-release"}
 
 

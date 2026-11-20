@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 - Manuscript test build
+
+- Import Markdown, UTF-8/UTF-16 text and Word (.docx) prose or paste a chapter. Edit and order saved copies in Manuscript. Each vault stores its own book in `.nemo/manuscript.sqlite3`.
+- Ask in Reader view through a chapter or a highlighted passage. Author view can read later chapters, current canon and matching vault passages. Long reads process sections in order and condense evidence for the final answer.
+- Summarise a chapter, check continuity, maintain canon/draft/retired decisions, and copy a conversation pin to manuscript canon.
+- Open recent or registered Obsidian vaults from More. Launch local Ollama from the offline indicator. Chat renders headings, emphasis and bullets.
+
 ## 1.1.0 — Deeper vault conversations
 
 - Rank passages across notes using natural-language words, aliases, tags and model-generated search terms.

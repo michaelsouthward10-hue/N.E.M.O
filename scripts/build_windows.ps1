@@ -1,3 +1,5 @@
+param([switch]$VerifyRelease)
+
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -37,6 +39,21 @@ if ($LASTEXITCODE -ne 0) { throw "NEMO desktop build failed." }
 
 $appDirectory = Join-Path $projectRoot ".nemo-release\NEMO"
 Copy-Item (Join-Path $projectRoot "README.md") (Join-Path $appDirectory "README.md") -Force
+if ($VerifyRelease) {
+    $protection = Get-MpComputerStatus -ErrorAction Stop
+    if (-not $protection.RealTimeProtectionEnabled) { throw "Enable Defender real-time protection to validate a release." }
+    $binary = Join-Path $appDirectory "NEMO.exe"
+    $hashBeforeScan = (Get-FileHash -LiteralPath $binary).Hash
+    $scanStarted = Get-Date
+    Start-MpScan -ScanType CustomScan -ScanPath $appDirectory -ErrorAction Stop
+    $detections = Get-MpThreatDetection -ErrorAction Stop | Where-Object {
+        $_.InitialDetectionTime -ge $scanStarted -and
+        ($_.Resources | Where-Object { $_ -like "*$appDirectory*" })
+    }
+    if ($detections -or (Get-FileHash -LiteralPath $binary -ErrorAction Stop).Hash -ne $hashBeforeScan) {
+        throw "Defender flagged or changed the build. Inspect Protection history before distributing."
+    }
+}
 $portableArchive = Join-Path $projectRoot ".nemo-release\NEMO-Windows-Portable.zip"
 Compress-Archive -Path (Join-Path $appDirectory "*") -DestinationPath $portableArchive -Force
 

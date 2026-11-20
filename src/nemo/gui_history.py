@@ -176,6 +176,7 @@ class PinnedWindow:
         controls = ttk.Frame(self.window, padding=12)
         controls.grid(row=4, column=0, sticky="ew")
         ttk.Button(controls, text="Pin this", command=self.add).pack(side="left")
+        ttk.Button(controls, text="Copy pin to manuscript canon", command=self.promote).pack(side="left", padx=6)
         ttk.Button(controls, text="Remove selected pin", command=self.remove).pack(side="right")
         self.list.bind("<<ListboxSelect>>", self.preview)
         self.load()
@@ -201,6 +202,21 @@ class PinnedWindow:
             self.load()
         except ValueError as error:
             messagebox.showinfo("Couldn't pin", str(error), parent=self.window)
+
+    def promote(self):
+        if not self.valid() or not self.list.curselection():
+            return
+        if not self.app.chat.vault_path:
+            messagebox.showinfo("Choose a vault", "Select the vault for this manuscript first.", parent=self.window)
+            return
+        from nemo.manuscript import Manuscript
+        import sqlite3
+        try:
+            item = self.items[self.list.curselection()[0]]
+            Manuscript(self.app.chat.vault_path).decide(item["content"], "Canon")
+            messagebox.showinfo("Added to canon", "Saved in Manuscript under Canon and drafts.", parent=self.window)
+        except (ValueError, OSError, sqlite3.Error) as error:
+            messagebox.showerror("Couldn't save canon", str(error), parent=self.window)
 
     def remove(self):
         if self.valid() and self.list.curselection():
